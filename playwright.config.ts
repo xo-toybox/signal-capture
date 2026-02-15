@@ -30,7 +30,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3001',
   },
   webServer: {
-    command: 'npx next dev --port 3001',
+    command: 'bunx next dev --port 3001',
     port: 3001,
     reuseExistingServer: false,
     env: getLocalSupabaseEnv(),

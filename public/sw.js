@@ -1,10 +1,6 @@
 const CACHE_NAME = 'signals-v1';
-const OFFLINE_URLS = ['/offline'];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_URLS).catch(() => {}))
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 

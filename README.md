@@ -70,6 +70,8 @@ supabase/schema.sql     # Full database schema
 
 ## Development
 
-See `Makefile` for all workflows (`make setup`, `make dev`, `make test`, `make test-e2e`). Env vars in `.env.example`, database schema in `supabase/schema.sql`.
+This repo is security-first — all changes go through automated security review via Ralph Loop (`.ralph/`), and every PR must pass both unit and E2E tests.
+
+See `Makefile` for all workflows (`make help` to list). Env vars in `.env.example`, database schema in `supabase/schema.sql`.
 
 Runs with mock data when Supabase credentials are not configured. E2E tests use a local Supabase with password auth (no OAuth) — requires Docker.

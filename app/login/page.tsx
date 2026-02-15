@@ -6,30 +6,32 @@ import { createClient } from '@/lib/supabase';
 
 function LoginContent() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const supabase = createClient();
 
+  const accessDenied = searchParams.get('error') === 'access_denied';
+  const error = accessDenied ? 'Access denied. This account is not authorized.' : authError;
+
   useEffect(() => {
-    if (searchParams.get('error') === 'access_denied') {
-      setError('Access denied. This account is not authorized.');
+    if (accessDenied) {
       supabase.auth.signOut();
     }
-  }, [searchParams, supabase.auth]);
+  }, [accessDenied, supabase.auth]);
 
   const handleSignIn = async () => {
     setLoading(true);
-    setError(null);
+    setAuthError(null);
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/api/auth/callback`,
       },
     });
 
-    if (error) {
-      setError(error.message);
+    if (oauthError) {
+      setAuthError(oauthError.message);
       setLoading(false);
     }
   };

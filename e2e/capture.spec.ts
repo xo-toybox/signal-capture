@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { authenticate, apiDelete } from './helpers';
+import { authenticate } from './helpers';
 
 test.describe('Signal capture form', () => {
   test.beforeEach(async ({ page }) => {

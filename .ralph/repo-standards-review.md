@@ -7,27 +7,26 @@
 
 ## Objective
 
-Review the repo for modern best practices, security, and correctness. Fix all issues found. Iterate until clean.
+Security-first review of the repo for modern best practices and correctness. Fix all issues found. Iterate until clean.
 
-## Process
+## Each iteration
 
-1. Read key repo config files (Makefile, package.json, README, .env.example, .gitignore, CI config, etc.)
-2. Identify issues — best practices, security, consistency, completeness
-3. Fix all issues
-4. **Cross-file sweep** — for every file changed, grep the repo for references to it and review those files too. A fix in one file (e.g. Makefile) can leave stale references elsewhere (README, CI, docs).
-5. Re-review — fixes can introduce new issues
-6. Repeat 2–5 until a full pass finds nothing
-7. **Adversarial pass** — assume something was missed. Actively try to find one more issue. Only proceed to verification if this pass comes up empty.
+Run every step in order. If anything was fixed during this iteration, stop — do NOT output EXIT_SIGNAL. The outer loop will re-feed this prompt for the next iteration.
 
-## Verification (mandatory — do not skip)
+1. **Discover** — delegate deep reviews to concurrent subagents. They should explore source code thoroughly within their dimension:
+   - **Security** — hardcoded secrets, leaked infrastructure IDs, injection risks, overly permissive config, auth/input validation in source
+   - **Correctness** — do commands work, cross-file reference sync, source code bugs and logic errors
+   - **Consistency & completeness** — single package manager, README matches reality, .env.example documents all vars, dead code and stale imports
+2. **Fix** all findings
+3. **Cross-file sweep** — for every file changed, grep the repo for references to it. A fix in one file can leave stale references elsewhere (README, CI, docs). Fix any stale references.
+4. **Verify** — delegate to a subagent: run `make check` and report results. Fix any failures.
+5. **Adversarial pass** — assume something was missed. Actively try to find one more issue. Fix if found.
+6. **Security review** — delegate to a subagent: focused audit of all changes made this iteration for security regressions (new injection vectors, exposed secrets, weakened auth, OWASP top 10). Fix any findings.
+7. **E2E gate** — delegate to a subagent: run `make test-e2e` and report results. Fix any failures.
 
-After the final review pass finds zero issues, run every user-facing command that was added or modified (e.g. `make help`, `make -n check`, `bun run typecheck`). Show the output. If any command fails or produces unexpected output, go back to step 2.
+If any step above produced fixes, stop here. The next iteration will re-review with fresh eyes.
 
-## Completion
-
-Only after verification passes with zero failures, output:
+If the entire iteration found nothing to fix and all verification passed, output:
 ```
 EXIT_SIGNAL
 ```
-
-Do NOT output EXIT_SIGNAL based on code review alone. Runtime verification must pass first.

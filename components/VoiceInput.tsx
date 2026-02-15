@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useSyncExternalStore } from 'react';
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
@@ -11,15 +11,15 @@ function getSpeechRecognition() {
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 }
 
+const noop = () => () => {};
+const getSupported = () => !!getSpeechRecognition();
+const getServerSupported = () => false;
+
 export default function VoiceInput({ onTranscript }: VoiceInputProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [supported, setSupported] = useState(false);
+  const supported = useSyncExternalStore(noop, getSupported, getServerSupported);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
-
-  useEffect(() => {
-    setSupported(!!getSpeechRecognition());
-  }, []);
 
   const toggle = useCallback(() => {
     if (isRecording) {

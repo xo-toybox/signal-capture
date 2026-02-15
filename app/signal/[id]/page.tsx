@@ -83,6 +83,16 @@ export default async function SignalDetail({
     minute: '2-digit',
   });
 
+  const validatedSourceUrl = (() => {
+    if (!s.source_url) return null;
+    try {
+      const parsed = new URL(s.source_url);
+      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null;
+    } catch {
+      return null;
+    }
+  })();
+
   return (
     <main className="pt-6 pb-12">
       <Link
@@ -131,25 +141,16 @@ export default async function SignalDetail({
           {s.capture_context}
         </div>
       )}
-      {(() => {
-        if (!s.source_url) return null;
-        try {
-          const parsed = new URL(s.source_url);
-          if (!['http:', 'https:'].includes(parsed.protocol)) return null;
-          return (
-            <a
-              href={parsed.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-2 text-xs font-mono text-[#3b82f6] hover:underline truncate max-w-full"
-            >
-              {s.source_url}
-            </a>
-          );
-        } catch {
-          return null;
-        }
-      })()}
+      {validatedSourceUrl && (
+        <a
+          href={validatedSourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-2 text-xs font-mono text-[#3b82f6] hover:underline truncate max-w-full"
+        >
+          {s.source_url}
+        </a>
+      )}
 
       {isEnriched && (
         <>
