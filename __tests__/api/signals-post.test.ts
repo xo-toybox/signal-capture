@@ -78,10 +78,10 @@ describe('POST /api/signals', () => {
     expect(inserted.source_url).toBeNull();
   });
 
-  it('accepts https:// URL in source_url', async () => {
+  it('accepts https:// URL in source_url and normalizes it', async () => {
     await POST(makeRequest({ raw_input: 'hello', source_url: 'https://example.com' }));
     const inserted = getLastInsert() as Record<string, unknown>;
-    expect(inserted.source_url).toBe('https://example.com');
+    expect(inserted.source_url).toBe('https://example.com/');
   });
 
   it('extracts URL from raw_input text', async () => {

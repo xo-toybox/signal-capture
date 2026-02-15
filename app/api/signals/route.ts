@@ -24,11 +24,16 @@ export async function POST(request: NextRequest) {
   const validMethods = ['text', 'voice', 'share'];
   const inputMethod = validMethods.includes(body.input_method) ? body.input_method : 'text';
 
-  const urlPattern = /^https?:\/\/[^\s]+$/;
+  function safeUrl(s: string): string | null {
+    try {
+      const parsed = new URL(s);
+      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null;
+    } catch { return null; }
+  }
+
   const urlMatch = rawInput.match(/https?:\/\/[^\s]+/);
-  const sourceUrl = (body.source_url && urlPattern.test(body.source_url))
-    ? body.source_url
-    : (urlMatch ? urlMatch[0] : null);
+  const sourceUrl = (body.source_url && safeUrl(body.source_url))
+    || (urlMatch ? safeUrl(urlMatch[0]) : null);
 
   const captureContext = typeof body.capture_context === 'string'
     ? body.capture_context.trim().slice(0, 5000) || null
