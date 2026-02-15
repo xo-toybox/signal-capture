@@ -41,14 +41,12 @@ export default async function SignalDetail({
 }) {
   const { id } = await params;
 
+  let signal;
   if (isConfigured) {
     const serverClient = await createServerClient();
     const { data: { user } } = await serverClient.auth.getUser();
     if (!user) redirect('/login');
-  }
 
-  let signal;
-  if (isConfigured) {
     const supabase = createServiceClient();
     const { data } = await supabase
       .from('signals_feed')
@@ -95,7 +93,6 @@ export default async function SignalDetail({
         &larr; back
       </Link>
 
-      {/* Header */}
       <div className="mt-4">
         {isEnriched && s.source_title ? (
           <h1 className="text-lg text-[#e5e5e5] leading-tight">{s.source_title}</h1>
@@ -126,7 +123,6 @@ export default async function SignalDetail({
         <div className="text-xs text-[#525252] mt-1 font-mono">{capturedAt}</div>
       </div>
 
-      {/* Raw Capture */}
       <SectionHeader label="Raw Capture" />
       <div className="font-mono text-sm text-[#e5e5e5] whitespace-pre-wrap leading-relaxed">
         {s.raw_input}
@@ -147,10 +143,8 @@ export default async function SignalDetail({
         </a>
       )}
 
-      {/* Enrichment sections — only if complete */}
       {isEnriched && (
         <>
-          {/* Key Claims */}
           {s.key_claims && s.key_claims.length > 0 && (
             <>
               <SectionHeader label="Key Claims" />
@@ -165,7 +159,6 @@ export default async function SignalDetail({
             </>
           )}
 
-          {/* Novelty */}
           {s.novelty_assessment && (
             <>
               <SectionHeader label="Novelty" />
@@ -175,7 +168,6 @@ export default async function SignalDetail({
             </>
           )}
 
-          {/* Tags */}
           {s.domain_tags && s.domain_tags.length > 0 && (
             <>
               <SectionHeader label="Tags" />
@@ -192,7 +184,6 @@ export default async function SignalDetail({
             </>
           )}
 
-          {/* Cross-signal Notes */}
           {s.cross_signal_notes && (
             <>
               <SectionHeader label="Cross-Signal Notes" />
@@ -202,7 +193,6 @@ export default async function SignalDetail({
             </>
           )}
 
-          {/* Confidence */}
           {s.confidence !== null && (
             <>
               <SectionHeader label="Confidence" />
@@ -222,14 +212,12 @@ export default async function SignalDetail({
         </>
       )}
 
-      {/* Pending enrichment placeholder */}
       {!isEnriched && s.processing_status === 'pending' && (
         <div className="mt-8 py-6 text-center text-xs text-[#525252] font-mono border-t border-white/[0.06]">
           awaiting enrichment
         </div>
       )}
 
-      {/* Human annotations */}
       {(s.human_note || s.human_rating) && (
         <>
           <SectionHeader label="Notes" />
@@ -244,7 +232,6 @@ export default async function SignalDetail({
         </>
       )}
 
-      {/* Delete */}
       <div className="mt-10 pt-6 border-t border-white/[0.06]">
         <DeleteButton id={s.id} />
       </div>

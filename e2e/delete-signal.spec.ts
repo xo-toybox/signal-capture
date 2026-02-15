@@ -13,16 +13,13 @@ test.describe('Delete signal', () => {
     await page.goto(`/signal/${signal.id}`);
     await expect(page.getByRole('heading', { name: rawInput })).toBeVisible();
 
-    // First click — should show "confirm delete"
     const deleteBtn = page.getByRole('button', { name: /delete/i });
     await deleteBtn.click();
     await expect(deleteBtn).toHaveText(/confirm delete/i);
 
-    // Second click — confirms deletion, should redirect to /
     await deleteBtn.click();
     await page.waitForURL('/');
 
-    // Verify signal no longer in API response
     const { data } = await apiGet(page, '/api/signals');
     const found = data.signals.find((s: { id: string }) => s.id === signal.id);
     expect(found).toBeUndefined();
@@ -37,10 +34,8 @@ test.describe('Delete signal', () => {
     await deleteBtn.click();
     await expect(deleteBtn).toHaveText(/confirm delete/i);
 
-    // Wait for auto-reset (3s timer)
     await expect(deleteBtn).toHaveText(/^delete$/i, { timeout: 5000 });
 
-    // Clean up
     await deleteBtn.click();
     await expect(deleteBtn).toHaveText(/confirm delete/i);
     await deleteBtn.click();

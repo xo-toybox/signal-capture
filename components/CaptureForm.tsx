@@ -16,19 +16,15 @@ export default function CaptureForm() {
   const contextRef = useRef<HTMLTextAreaElement>(null);
   const searchParams = useSearchParams();
 
-  // Handle share target params
   useEffect(() => {
     const sharedUrl = searchParams.get('shared_url');
     const sharedText = searchParams.get('shared_text');
     const sharedTitle = searchParams.get('shared_title');
+    const content = sharedUrl ? (sharedTitle || sharedUrl) : sharedText;
 
-    if (sharedUrl || sharedText) {
+    if (content) {
       setInputMethod('share');
-      if (sharedUrl) {
-        setRawInput(sharedTitle || sharedUrl);
-      } else if (sharedText) {
-        setRawInput(sharedText);
-      }
+      setRawInput(content);
       setTimeout(() => contextRef.current?.focus(), 100);
     }
   }, [searchParams]);
@@ -50,7 +46,6 @@ export default function CaptureForm() {
 
     try {
       if (!isConfigured) {
-        // Demo mode — just show the toast
         await new Promise(r => setTimeout(r, 300));
       } else {
         const res = await fetch('/api/signals', {

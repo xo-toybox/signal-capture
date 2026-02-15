@@ -1,10 +1,6 @@
 import { defineConfig } from '@playwright/test';
 import { execSync } from 'child_process';
 
-/**
- * Read credentials from the local Supabase instance.
- * Requires `supabase start` to have been run first.
- */
 function getLocalSupabaseEnv() {
   try {
     const raw = execSync('supabase status -o json', {

@@ -16,17 +16,14 @@ export async function POST(request: NextRequest) {
   const supabase = createServiceClient();
   const body = await request.json();
 
-  // Validate raw_input
   const rawInput = typeof body.raw_input === 'string' ? body.raw_input.trim() : '';
   if (!rawInput || rawInput.length > 10000) {
     return Response.json({ error: 'raw_input is required and must be under 10000 chars' }, { status: 400 });
   }
 
-  // Validate input_method
   const validMethods = ['text', 'voice', 'share'];
   const inputMethod = validMethods.includes(body.input_method) ? body.input_method : 'text';
 
-  // Validate URLs — only allow http/https to prevent javascript: XSS
   const urlPattern = /^https?:\/\/[^\s]+$/;
   const urlMatch = rawInput.match(/https?:\/\/[^\s]+/);
   const sourceUrl = (body.source_url && urlPattern.test(body.source_url))
@@ -64,8 +61,7 @@ export async function DELETE(request: NextRequest) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = request.nextUrl.searchParams.get('id');
   if (!id) {
     return Response.json({ error: 'id is required' }, { status: 400 });
   }
@@ -91,7 +87,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
-  const { searchParams } = new URL(request.url);
+  const { searchParams } = request.nextUrl;
   const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20') || 20, 1), 100);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0') || 0, 0);
 

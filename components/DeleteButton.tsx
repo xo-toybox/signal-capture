@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
+function buttonLabel(deleting: boolean, confirming: boolean): string {
+  if (deleting) return 'deleting...';
+  if (confirming) return 'confirm delete';
+  return 'delete';
+}
+
 export default function DeleteButton({ id }: { id: string }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -43,7 +49,7 @@ export default function DeleteButton({ id }: { id: string }) {
           : 'text-[#525252] border-white/[0.06] hover:text-[#737373] hover:border-white/10'
       } disabled:opacity-50`}
     >
-      {deleting ? 'deleting...' : confirming ? 'confirm delete' : 'delete'}
+      {buttonLabel(deleting, confirming)}
     </button>
   );
 }

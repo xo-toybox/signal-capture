@@ -13,7 +13,6 @@ test.describe('Authentication', () => {
       const res = await fetch('/api/signals', { redirect: 'manual' });
       return { type: res.type };
     });
-    // Proxy redirects unauthenticated requests — opaqueredirect with redirect:'manual'
     expect(result.type).toBe('opaqueredirect');
   });
 

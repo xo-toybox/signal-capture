@@ -8,8 +8,6 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const isConfigured = !!(url && serviceKey);
 
-// Cookie-based client — uses authenticated session via cookies.
-// For auth checks in API routes and server components.
 export async function createServerClient() {
   const cookieStore = await cookies();
   return createSupabaseServerClient(url!, anonKey!, {
@@ -23,14 +21,13 @@ export async function createServerClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // setAll unavailable in Server Components
+          // ignored: setAll unavailable in Server Components
         }
       },
     },
   });
 }
 
-// Service role client — bypasses RLS. For server-side DB operations.
 export function createServiceClient() {
   if (!isConfigured) {
     throw new Error('Supabase not configured');

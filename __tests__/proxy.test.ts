@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
-// Mock @supabase/ssr used by proxy.ts directly
 let mockUser: { id: string; email: string } | null = null;
 
 vi.mock('@supabase/ssr', () => ({

@@ -4,19 +4,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
-  className?: string;
 }
 
-export default function VoiceInput({ onTranscript, className = '' }: VoiceInputProps) {
+function getSpeechRecognition() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+}
+
+export default function VoiceInput({ onTranscript }: VoiceInputProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [supported, setSupported] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    setSupported(!!SR);
+    setSupported(!!getSpeechRecognition());
   }, []);
 
   const toggle = useCallback(() => {
@@ -26,8 +28,7 @@ export default function VoiceInput({ onTranscript, className = '' }: VoiceInputP
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = getSpeechRecognition();
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
@@ -67,7 +68,7 @@ export default function VoiceInput({ onTranscript, className = '' }: VoiceInputP
         isRecording
           ? 'text-red-500 recording-pulse'
           : 'text-[#737373] hover:text-[#e5e5e5]'
-      } ${className}`}
+      }`}
       aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

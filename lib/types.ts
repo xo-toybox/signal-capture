@@ -43,10 +43,3 @@ export interface SignalFeedItem {
   human_rating: number | null;
   tier_override: string | null;
 }
-
-export interface CapturePayload {
-  raw_input: string;
-  source_url?: string | null;
-  capture_context?: string | null;
-  input_method: InputMethod;
-}

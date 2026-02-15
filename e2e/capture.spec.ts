@@ -22,18 +22,13 @@ test.describe('Signal capture form', () => {
     await expect(captureBtn).toBeEnabled();
     await captureBtn.click();
 
-    // Should show success toast
     await expect(page.getByText(/captured/i)).toBeVisible();
-
-    // Input should be cleared after submission
     await expect(textInput).toHaveValue('');
 
-    // Reload to see the signal in the feed (realtime may have latency)
     await page.reload();
     const signalLink = page.getByText(rawInput);
     await expect(signalLink).toBeVisible();
 
-    // Clean up — navigate to detail and delete
     await signalLink.click();
     await page.getByRole('button', { name: /delete/i }).click();
     await page.getByRole('button', { name: /confirm delete/i }).click();
@@ -51,13 +46,11 @@ test.describe('Signal capture form', () => {
 
     await expect(page.getByText(/captured/i)).toBeVisible();
 
-    // Reload, navigate to detail, verify context was saved
     await page.reload();
     await page.getByText(rawInput).click();
     await page.waitForURL(/\/signal\//);
     await expect(page.getByText(context)).toBeVisible();
 
-    // Clean up
     await page.getByRole('button', { name: /delete/i }).click();
     await page.getByRole('button', { name: /confirm delete/i }).click();
     await page.waitForURL('/');

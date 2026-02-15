@@ -12,12 +12,10 @@ test.describe('Signal detail page', () => {
 
     await page.goto(`/signal/${signal.id}`);
 
-    // Raw input visible in heading and body
     await expect(page.getByRole('heading', { name: rawInput })).toBeVisible();
     await expect(page.getByText('Pending')).toBeVisible();
     await expect(page.getByText('awaiting enrichment')).toBeVisible();
 
-    // Clean up
     await apiDelete(page, `/api/signals?id=${signal.id}`);
   });
 

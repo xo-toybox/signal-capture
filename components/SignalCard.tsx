@@ -39,7 +39,6 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
       href={`/signal/${signal.id}`}
       className="group flex border-b border-white/5 hover:bg-white/[0.02] transition-colors duration-150"
     >
-      {/* Status bar */}
       <div
         className={`w-0.5 flex-shrink-0 ${STATUS_COLORS[signal.processing_status]}`}
       />

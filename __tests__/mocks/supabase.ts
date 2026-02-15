@@ -5,7 +5,6 @@ type User = { id: string; email: string };
 let currentUser: User | null = null;
 let serviceQueryResult: { data: unknown; error: unknown } = { data: null, error: null };
 
-// Captured call arguments for assertions
 let lastInsertData: unknown = null;
 let lastEqCall: [string, unknown] | null = null;
 let lastRangeCall: [number, number] | null = null;
@@ -35,8 +34,6 @@ export function getLastFromTable() {
   return lastFromTable;
 }
 
-// Chainable query builder that lazily resolves serviceQueryResult at await time
-// and captures arguments for assertion
 function createQueryBuilder() {
   const proxy: Record<string, unknown> = new Proxy({} as Record<string, unknown>, {
     get(_, prop) {
@@ -55,14 +52,12 @@ function createQueryBuilder() {
       if (prop === 'range') {
         return (start: number, end: number) => { lastRangeCall = [start, end]; return proxy; };
       }
-      // All other chained methods just return proxy
       return vi.fn().mockReturnValue(proxy);
     },
   });
   return proxy;
 }
 
-// This factory is called by vi.mock — returned functions read state lazily
 export function getSupabaseServerMock() {
   return {
     createServerClient: vi.fn().mockImplementation(() =>

@@ -34,18 +34,16 @@ export default function SignalFeed() {
         setHasMore(data.signals.length === PAGE_SIZE);
       }
     } catch {
-      // silently fail
+      // ignored
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Initial load
   useEffect(() => {
     fetchSignals(0);
   }, [fetchSignals]);
 
-  // Realtime subscription via anon key (read-only RLS)
   useEffect(() => {
     if (!isConfigured) return;
 
