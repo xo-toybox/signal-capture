@@ -52,10 +52,12 @@ components/
   SignalFeed.tsx        # Realtime feed with pagination
   SignalCard.tsx        # Feed item card
   VoiceInput.tsx        # Web Speech API wrapper
+  DeleteButton.tsx      # Two-click delete with confirmation
 lib/
   supabase.ts           # Browser client (realtime)
   supabase-server.ts    # Server client (cookies) + service client (RLS bypass)
   types.ts              # SignalRaw, SignalFeedItem, etc.
+  constants.ts          # Shared status colors and labels
   mock-data.ts          # Demo data when Supabase is not configured
 proxy.ts                # Auth middleware (Next.js 16 proxy)
 supabase/schema.sql     # Full database schema
@@ -70,7 +72,7 @@ supabase/schema.sql     # Full database schema
 
 ## Development
 
-This repo is security-first — all changes go through automated security review via Ralph Loop (`.ralph/`), and every PR must pass both unit and E2E tests.
+This repo is security-first — all changes go through automated security review via Ralph Loop (`.ralph/`), and every PR should pass both unit and E2E tests (`make check`).
 
 See `Makefile` for all workflows (`make help` to list). Env vars in `.env.example`, database schema in `supabase/schema.sql`.
 

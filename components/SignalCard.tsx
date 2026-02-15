@@ -1,16 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import type { SignalFeedItem, ProcessingStatus } from '@/lib/types';
-
-const STATUS_COLORS: Record<ProcessingStatus, string> = {
-  pending: 'bg-[#eab308]',
-  processing: 'bg-[#3b82f6]',
-  review: 'bg-[#3b82f6]',
-  complete: 'bg-[#22c55e]',
-  dismissed: 'bg-[#ef4444]',
-  failed: 'bg-[#ef4444]',
-};
+import type { SignalFeedItem } from '@/lib/types';
+import { STATUS_BG_COLORS } from '@/lib/constants';
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -40,7 +32,7 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
       className="group flex border-b border-white/5 hover:bg-white/[0.02] transition-colors duration-150"
     >
       <div
-        className={`w-0.5 flex-shrink-0 ${STATUS_COLORS[signal.processing_status]}`}
+        className={`w-0.5 flex-shrink-0 ${STATUS_BG_COLORS[signal.processing_status]}`}
       />
 
       <div className="flex-1 px-3 py-2.5 min-w-0">

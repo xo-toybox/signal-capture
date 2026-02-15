@@ -1,25 +1,26 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
+import { createClient, isConfigured } from '@/lib/supabase';
 
 function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const supabase = useMemo(() => isConfigured ? createClient() : null, []);
 
   const accessDenied = searchParams.get('error') === 'access_denied';
   const error = accessDenied ? 'Access denied. This account is not authorized.' : authError;
 
   useEffect(() => {
     if (accessDenied) {
-      supabase.auth.signOut();
+      supabase?.auth.signOut();
     }
-  }, [accessDenied, supabase.auth]);
+  }, [accessDenied, supabase]);
 
   const handleSignIn = async () => {
+    if (!supabase) return;
     setLoading(true);
     setAuthError(null);
 

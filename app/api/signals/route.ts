@@ -14,7 +14,13 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
-  const body = await request.json();
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
 
   const rawInput = typeof body.raw_input === 'string' ? body.raw_input.trim() : '';
   if (!rawInput || rawInput.length > 10000) {
@@ -32,8 +38,11 @@ export async function POST(request: NextRequest) {
   }
 
   const urlMatch = rawInput.match(/https?:\/\/[^\s]+/);
+  const extractedUrl = urlMatch
+    ? urlMatch[0].replace(/[.,;:!?)>\]]+$/, '')
+    : null;
   const sourceUrl = (body.source_url && safeUrl(body.source_url))
-    || (urlMatch ? safeUrl(urlMatch[0]) : null);
+    || (extractedUrl ? safeUrl(extractedUrl) : null);
 
   const captureContext = typeof body.capture_context === 'string'
     ? body.capture_context.trim().slice(0, 5000) || null
@@ -54,6 +63,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
+    console.error('signals POST error:', error);
     return Response.json({ error: 'Failed to capture signal' }, { status: 500 });
   }
 

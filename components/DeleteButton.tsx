@@ -27,16 +27,20 @@ export default function DeleteButton({ id }: { id: string }) {
     }
 
     setDeleting(true);
-    const res = await fetch(`/api/signals?id=${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    });
+    try {
+      const res = await fetch(`/api/signals?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
 
-    if (res.ok) {
-      router.push('/');
-    } else {
-      setDeleting(false);
-      setConfirming(false);
+      if (res.ok) {
+        router.push('/');
+        return;
+      }
+    } catch {
+      // network error
     }
+    setDeleting(false);
+    setConfirming(false);
   }, [confirming, id, router]);
 
   return (

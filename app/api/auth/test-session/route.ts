@@ -17,7 +17,7 @@ export async function POST() {
       email_confirm: true,
     });
     if (error) {
-      return Response.json({ error: error.message }, { status: 500 });
+      return Response.json({ error: 'Failed to create test user' }, { status: 500 });
     }
   }
 
@@ -28,7 +28,7 @@ export async function POST() {
   });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Authentication failed' }, { status: 500 });
   }
 
   return Response.json({ ok: true });

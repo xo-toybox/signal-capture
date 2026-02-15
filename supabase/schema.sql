@@ -184,35 +184,36 @@ CREATE POLICY "Auth read" ON signals_refinements FOR SELECT USING (auth.role() =
 
 
 -- ============================================================
--- EVENT: Notify Discord on new signal capture
--- Replace {{DISCORD_WEBHOOK_URL}} with actual webhook URL
+-- EVENT: Notify Discord on new signal capture (optional)
+-- To enable: replace YOUR_WEBHOOK_URL, uncomment, and run.
+-- Requires pg_net extension (enabled above).
 -- ============================================================
-CREATE OR REPLACE FUNCTION notify_discord_new_signal()
-RETURNS trigger AS $$
-BEGIN
-  PERFORM net.http_post(
-    url := '{{DISCORD_WEBHOOK_URL}}',
-    headers := '{"Content-Type": "application/json"}'::jsonb,
-    body := jsonb_build_object(
-      'embeds', jsonb_build_array(
-        jsonb_build_object(
-          'title', LEFT(NEW.raw_input, 100),
-          'description', COALESCE(NEW.capture_context, ''),
-          'fields', jsonb_build_array(
-            jsonb_build_object('name', 'URL', 'value', COALESCE(NEW.source_url, '_none_'), 'inline', true),
-            jsonb_build_object('name', 'Method', 'value', NEW.input_method, 'inline', true),
-            jsonb_build_object('name', 'ID', 'value', NEW.id::text, 'inline', false)
-          ),
-          'color', 5814783,
-          'timestamp', NEW.created_at::text
-        )
-      )
-    )::jsonb
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER on_signal_capture
-  AFTER INSERT ON signals_raw
-  FOR EACH ROW EXECUTE FUNCTION notify_discord_new_signal();
+-- CREATE OR REPLACE FUNCTION notify_discord_new_signal()
+-- RETURNS trigger AS $$
+-- BEGIN
+--   PERFORM net.http_post(
+--     url := 'YOUR_WEBHOOK_URL',
+--     headers := '{"Content-Type": "application/json"}'::jsonb,
+--     body := jsonb_build_object(
+--       'embeds', jsonb_build_array(
+--         jsonb_build_object(
+--           'title', LEFT(NEW.raw_input, 100),
+--           'description', COALESCE(NEW.capture_context, ''),
+--           'fields', jsonb_build_array(
+--             jsonb_build_object('name', 'URL', 'value', COALESCE(NEW.source_url, '_none_'), 'inline', true),
+--             jsonb_build_object('name', 'Method', 'value', NEW.input_method, 'inline', true),
+--             jsonb_build_object('name', 'ID', 'value', NEW.id::text, 'inline', false)
+--           ),
+--           'color', 5814783,
+--           'timestamp', NEW.created_at::text
+--         )
+--       )
+--     )
+--   );
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER on_signal_capture
+--   AFTER INSERT ON signals_raw
+--   FOR EACH ROW EXECUTE FUNCTION notify_discord_new_signal();

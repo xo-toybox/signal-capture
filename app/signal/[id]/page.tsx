@@ -1,27 +1,12 @@
 import { createServerClient, isConfigured } from '@/lib/supabase-server';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
-import { redirect } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import type { SignalFeedItem, ProcessingStatus } from '@/lib/types';
+import type { SignalFeedItem } from '@/lib/types';
 import DeleteButton from '@/components/DeleteButton';
+import { STATUS_LABELS, STATUS_TEXT_COLORS } from '@/lib/constants';
 
-const STATUS_LABELS: Record<ProcessingStatus, string> = {
-  pending: 'Pending',
-  processing: 'Processing',
-  review: 'In Review',
-  complete: 'Complete',
-  dismissed: 'Dismissed',
-  failed: 'Failed',
-};
-
-const STATUS_COLORS: Record<ProcessingStatus, string> = {
-  pending: 'text-[#eab308]',
-  processing: 'text-[#3b82f6]',
-  review: 'text-[#3b82f6]',
-  complete: 'text-[#22c55e]',
-  dismissed: 'text-[#ef4444]',
-  failed: 'text-[#ef4444]',
-};
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function SectionHeader({ label }: { label: string }) {
   return (
@@ -40,6 +25,7 @@ export default async function SignalDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  if (!UUID_RE.test(id)) notFound();
 
   let signal;
   if (isConfigured) {
@@ -112,7 +98,7 @@ export default async function SignalDetail({
         )}
 
         <div className="flex items-center gap-2 mt-2 text-xs">
-          <span className={STATUS_COLORS[s.processing_status]}>
+          <span className={STATUS_TEXT_COLORS[s.processing_status]}>
             {STATUS_LABELS[s.processing_status]}
           </span>
           {s.source_tier && (

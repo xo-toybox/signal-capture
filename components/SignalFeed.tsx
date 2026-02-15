@@ -85,6 +85,14 @@ export default function SignalFeed() {
           );
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'signals_raw' },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setSignals(prev => prev.filter(s => s.id !== deletedId));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -92,10 +100,14 @@ export default function SignalFeed() {
     };
   }, []);
 
-  const loadMore = () => {
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const loadMore = async () => {
     const newOffset = offset + PAGE_SIZE;
     setOffset(newOffset);
-    fetchSignals(newOffset);
+    setLoadingMore(true);
+    await fetchSignals(newOffset);
+    setLoadingMore(false);
   };
 
   if (loading) {
@@ -126,9 +138,10 @@ export default function SignalFeed() {
         <div className="py-4 text-center">
           <button
             onClick={loadMore}
-            className="px-4 py-1.5 text-xs font-mono text-[#737373] hover:text-[#e5e5e5] transition-colors duration-150"
+            disabled={loadingMore}
+            className="px-4 py-1.5 text-xs font-mono text-[#737373] hover:text-[#e5e5e5] disabled:opacity-30 transition-colors duration-150"
           >
-            load more
+            {loadingMore ? '...' : 'load more'}
           </button>
         </div>
       )}

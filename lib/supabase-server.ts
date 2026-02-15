@@ -9,8 +9,11 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 export const isConfigured = !!(url && anonKey && serviceKey);
 
 export async function createServerClient() {
+  if (!url || !anonKey) {
+    throw new Error('Supabase not configured: missing URL or anon key');
+  }
   const cookieStore = await cookies();
-  return createSupabaseServerClient(url!, anonKey!, {
+  return createSupabaseServerClient(url, anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
