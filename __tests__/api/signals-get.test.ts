@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { mockAuth, mockServiceClient, getLastRange, getLastFromTable } from '../mocks/supabase';
+import { mockAuth, mockQueryResult, getLastRange, getLastFromTable, getLastFromClient } from '../mocks/supabase';
 
 const { GET } = await import('@/app/api/signals/route');
 
@@ -14,13 +14,18 @@ function makeRequest(params = '') {
 describe('GET /api/signals', () => {
   beforeEach(() => {
     mockAuth(testUser);
-    mockServiceClient({ data: sampleSignals });
+    mockQueryResult({ data: sampleSignals });
   });
 
   it('returns 401 when unauthenticated', async () => {
     mockAuth(null);
     const res = await GET(makeRequest());
     expect(res.status).toBe(401);
+  });
+
+  it('queries via server client (RLS-enforced), not service client', async () => {
+    await GET(makeRequest());
+    expect(getLastFromClient()).toBe('server');
   });
 
   it('uses default limit=20 and offset=0', async () => {
@@ -53,7 +58,7 @@ describe('GET /api/signals', () => {
   });
 
   it('returns 500 on database error', async () => {
-    mockServiceClient({ error: { message: 'db fail' } });
+    mockQueryResult({ error: { message: 'db fail' } });
     const res = await GET(makeRequest());
     expect(res.status).toBe(500);
   });

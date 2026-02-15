@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { mockAuth, mockServiceClient, getLastInsert } from '../mocks/supabase';
+import { mockAuth, mockQueryResult, getLastInsert, getLastFromClient } from '../mocks/supabase';
 
 const { POST } = await import('@/app/api/signals/route');
 
@@ -17,7 +17,7 @@ function makeRequest(body: Record<string, unknown>) {
 describe('POST /api/signals', () => {
   beforeEach(() => {
     mockAuth(testUser);
-    mockServiceClient({ data: { id: 'sig-1', raw_input: 'test' } });
+    mockQueryResult({ data: { id: 'sig-1', raw_input: 'test' } });
   });
 
   it('returns 401 when unauthenticated', async () => {
@@ -51,6 +51,11 @@ describe('POST /api/signals', () => {
     expect(res.status).toBe(201);
     const inserted = getLastInsert() as Record<string, unknown>;
     expect(inserted.raw_input).toHaveLength(10000);
+  });
+
+  it('inserts via service client (bypasses RLS for write operations)', async () => {
+    await POST(makeRequest({ raw_input: 'hello' }));
+    expect(getLastFromClient()).toBe('service');
   });
 
   it('defaults invalid input_method to "text"', async () => {
@@ -111,7 +116,7 @@ describe('POST /api/signals', () => {
   });
 
   it('returns 500 on database error', async () => {
-    mockServiceClient({ error: { message: 'db fail' } });
+    mockQueryResult({ error: { message: 'db fail' } });
     const res = await POST(makeRequest({ raw_input: 'hello' }));
     expect(res.status).toBe(500);
   });

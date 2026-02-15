@@ -62,8 +62,8 @@ export async function DELETE(request: NextRequest) {
   }
 
   const id = request.nextUrl.searchParams.get('id');
-  if (!id) {
-    return Response.json({ error: 'id is required' }, { status: 400 });
+  if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return Response.json({ error: 'valid id is required' }, { status: 400 });
   }
 
   const supabase = createServiceClient();
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = createServiceClient();
+  const supabase = await createServerClient();
   const { searchParams } = request.nextUrl;
   const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20') || 20, 1), 100);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0') || 0, 0);

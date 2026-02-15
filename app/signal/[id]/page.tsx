@@ -1,4 +1,4 @@
-import { createServerClient, createServiceClient, isConfigured } from '@/lib/supabase-server';
+import { createServerClient, isConfigured } from '@/lib/supabase-server';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -43,11 +43,10 @@ export default async function SignalDetail({
 
   let signal;
   if (isConfigured) {
-    const serverClient = await createServerClient();
-    const { data: { user } } = await serverClient.auth.getUser();
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect('/login');
 
-    const supabase = createServiceClient();
     const { data } = await supabase
       .from('signals_feed')
       .select('*')
@@ -132,16 +131,25 @@ export default async function SignalDetail({
           {s.capture_context}
         </div>
       )}
-      {s.source_url && /^https?:\/\//.test(s.source_url) && (
-        <a
-          href={s.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-2 text-xs font-mono text-[#3b82f6] hover:underline truncate max-w-full"
-        >
-          {s.source_url}
-        </a>
-      )}
+      {(() => {
+        if (!s.source_url) return null;
+        try {
+          const parsed = new URL(s.source_url);
+          if (!['http:', 'https:'].includes(parsed.protocol)) return null;
+          return (
+            <a
+              href={parsed.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-2 text-xs font-mono text-[#3b82f6] hover:underline truncate max-w-full"
+            >
+              {s.source_url}
+            </a>
+          );
+        } catch {
+          return null;
+        }
+      })()}
 
       {isEnriched && (
         <>
