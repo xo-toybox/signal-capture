@@ -25,8 +25,76 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
   const [assignClaude, setAssignClaude] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognitionSupported, setRecognitionSupported] = useState(true);
   const titleRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognitionAPI = (window as typeof window & {
+      SpeechRecognition?: new () => SpeechRecognition;
+      webkitSpeechRecognition?: new () => SpeechRecognition;
+    }).SpeechRecognition || (window as typeof window & {
+      SpeechRecognition?: new () => SpeechRecognition;
+      webkitSpeechRecognition?: new () => SpeechRecognition;
+    }).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionAPI) {
+      setRecognitionSupported(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    let finalTranscript = '';
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      setDescription(prev => {
+        const baseText = prev.replace(/\s*\[.*?\]\s*$/, '').trim();
+        const combined = (baseText + ' ' + finalTranscript).trim();
+        return interimTranscript
+          ? combined + ' [' + interimTranscript + ']'
+          : combined;
+      });
+    };
+
+    recognition.onerror = () => {
+      setIsRecording(false);
+      setError('Voice recognition error — please try again');
+    };
+
+    recognition.onend = () => {
+      if (isRecording) {
+        // Clean up interim text markers when recording stops
+        setDescription(prev => prev.replace(/\s*\[.*?\]\s*$/, '').trim());
+      }
+      setIsRecording(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+    };
+  }, [isRecording]);
 
   // Reset form when opening
   useEffect(() => {
@@ -38,9 +106,15 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
       setAssignClaude(true);
       setSubmitting(false);
       setError('');
+      setIsRecording(false);
       setTimeout(() => titleRef.current?.focus(), 50);
+    } else {
+      // Stop recording when modal closes
+      if (isRecording && recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
     }
-  }, [open]);
+  }, [open, isRecording]);
 
   // Focus trap
   const handleTabTrap = useCallback((e: KeyboardEvent) => {
@@ -66,10 +140,27 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     return () => window.removeEventListener('keydown', handleTabTrap);
   }, [open, handleTabTrap]);
 
+  const toggleRecording = useCallback(() => {
+    if (!recognitionRef.current || !recognitionSupported) return;
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+    } else {
+      setError('');
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
+  }, [isRecording, recognitionSupported]);
+
   const handleSubmit = useCallback(async () => {
     if (!title.trim() || submitting) return;
     setSubmitting(true);
     setError('');
+
+    // Stop recording if active
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
 
     try {
       const res = await fetch('/api/report', {
@@ -101,7 +192,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     } finally {
       setSubmitting(false);
     }
-  }, [title, submitting, description, kind, severity, assignClaude, onSuccess]);
+  }, [title, submitting, description, kind, severity, assignClaude, onSuccess, isRecording]);
 
   // Escape to close, Cmd+Enter to submit
   useEffect(() => {
@@ -202,20 +293,72 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
             }}
           />
 
-          {/* Description — bottom border only, no label */}
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="w-full bg-transparent border-0 border-b border-white/[0.08] rounded-none px-0 py-3 font-mono text-sm leading-relaxed text-white/90 placeholder:text-white/25 outline-none transition-all duration-300 resize-none"
-            placeholder="Description (optional)"
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444450' : '#3b82f650';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-            }}
-          />
+          {/* Description with voice input */}
+          <div className="relative">
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full bg-transparent border-0 border-b border-white/[0.08] rounded-none px-0 py-3 pr-10 font-mono text-sm leading-relaxed text-white/90 placeholder:text-white/25 outline-none transition-all duration-300 resize-none"
+              placeholder="Description (optional)"
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444450' : '#3b82f650';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              }}
+            />
+            {recognitionSupported && (
+              <button
+                type="button"
+                onClick={toggleRecording}
+                disabled={submitting}
+                aria-label={isRecording ? 'Stop voice input' : 'Start voice input'}
+                className="absolute right-0 bottom-3 w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{
+                  background: isRecording
+                    ? 'rgba(239, 68, 68, 0.12)'
+                    : 'transparent',
+                  border: isRecording
+                    ? '1px solid rgba(239, 68, 68, 0.3)'
+                    : '1px solid rgba(255, 255, 255, 0.08)',
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="transition-colors duration-200"
+                  style={{
+                    color: isRecording ? '#ef4444' : 'rgba(255, 255, 255, 0.4)',
+                  }}
+                >
+                  {isRecording ? (
+                    <>
+                      <rect x="9" y="2" width="6" height="20" rx="3" />
+                      <animate
+                        attributeName="opacity"
+                        values="1;0.5;1"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                      <line x1="12" y1="19" x2="12" y2="22" />
+                    </>
+                  )}
+                </svg>
+              </button>
+            )}
+          </div>
 
           {/* Error */}
           {error && (
