@@ -8,10 +8,30 @@ import type { SignalFeedItem } from '@/lib/types';
 
 const PAGE_SIZE = 20;
 
-export default function SignalFeed() {
-  const [signals, setSignals] = useState<SignalFeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
+const NULL_ENRICHMENT: Partial<SignalFeedItem> = {
+  source_title: null,
+  key_claims: null,
+  novelty_assessment: null,
+  domain_tags: null,
+  signal_type: null,
+  source_tier: null,
+  frontier_status: null,
+  confidence: null,
+  cross_signal_notes: null,
+  human_note: null,
+  human_rating: null,
+  tier_override: null,
+};
+
+interface Props {
+  initialSignals?: SignalFeedItem[];
+}
+
+export default function SignalFeed({ initialSignals }: Props) {
+  const hasInitial = initialSignals && initialSignals.length > 0;
+  const [signals, setSignals] = useState<SignalFeedItem[]>(hasInitial ? initialSignals : []);
+  const [loading, setLoading] = useState(!hasInitial);
+  const [hasMore, setHasMore] = useState(hasInitial ? initialSignals.length === PAGE_SIZE : true);
   const [offset, setOffset] = useState(0);
 
   const fetchSignals = useCallback(async (currentOffset: number) => {
@@ -40,10 +60,28 @@ export default function SignalFeed() {
     }
   }, []);
 
+  // Only fetch client-side if no initial data was provided
   useEffect(() => {
-    fetchSignals(0);
-  }, [fetchSignals]);
+    if (!hasInitial) {
+      fetchSignals(0);
+    }
+  }, [fetchSignals, hasInitial]);
 
+  // Listen for instant signal capture events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const raw = (e as CustomEvent).detail;
+      if (!raw?.id) return;
+      const newSignal: SignalFeedItem = { ...raw, ...NULL_ENRICHMENT };
+      setSignals(prev =>
+        prev.some(s => s.id === newSignal.id) ? prev : [newSignal, ...prev]
+      );
+    };
+    window.addEventListener('signal-captured', handler);
+    return () => window.removeEventListener('signal-captured', handler);
+  }, []);
+
+  // Realtime subscription
   useEffect(() => {
     if (!isConfigured) return;
 
@@ -57,20 +95,11 @@ export default function SignalFeed() {
         (payload) => {
           const newSignal: SignalFeedItem = {
             ...payload.new as SignalFeedItem,
-            source_title: null,
-            key_claims: null,
-            novelty_assessment: null,
-            domain_tags: null,
-            signal_type: null,
-            source_tier: null,
-            frontier_status: null,
-            confidence: null,
-            cross_signal_notes: null,
-            human_note: null,
-            human_rating: null,
-            tier_override: null,
+            ...NULL_ENRICHMENT,
           };
-          setSignals(prev => [newSignal, ...prev]);
+          setSignals(prev =>
+            prev.some(s => s.id === newSignal.id) ? prev : [newSignal, ...prev]
+          );
         }
       )
       .on(

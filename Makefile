@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help dev dev-docker setup test test-e2e typecheck lint check build clean nuke db-push db-reset _ensure-docker _ensure-supabase
+.PHONY: help dev dev-docker setup test test-e2e typecheck lint check build clean nuke db-push db-pull db-reset _ensure-docker _ensure-supabase
 
 # --- Help ---
 
@@ -55,6 +55,14 @@ setup: ## First-time project setup
 db-push: ## Show instructions for applying schema
 	@echo "Paste supabase/schema.sql into the Supabase SQL Editor:"
 	@echo "https://supabase.com/dashboard/project/$${SUPABASE_PROJECT_REF:-<your-project-ref>}/sql"
+
+db-pull: _ensure-supabase ## Pull production data into local Supabase
+	@if [ -z "$${SUPABASE_PROJECT_REF}" ]; then echo "SUPABASE_PROJECT_REF not set" >&2; exit 1; fi
+	supabase db dump --data-only -f /tmp/claude/prod-data.sql --project-ref $${SUPABASE_PROJECT_REF}
+	supabase db reset --linked=false
+	psql "$$(supabase status -o json | jq -r .DB_URL)" < /tmp/claude/prod-data.sql
+	rm -f /tmp/claude/prod-data.sql
+	@echo "Done. Local database now has production data."
 
 db-reset: _ensure-supabase ## Reset local database
 	supabase db reset

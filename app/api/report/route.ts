@@ -66,6 +66,10 @@ export async function POST(request: NextRequest) {
     console.error('report POST error: GITHUB_TOKEN or GITHUB_REPO not configured');
     return Response.json({ error: 'Bug reporting is not configured' }, { status: 502 });
   }
+  if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(githubRepo)) {
+    console.error('report POST error: GITHUB_REPO format invalid');
+    return Response.json({ error: 'Bug reporting is misconfigured' }, { status: 502 });
+  }
 
   // Build issue body
   const parts: string[] = [];
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
     parts.push('<details><summary>Console Errors</summary>');
     parts.push('');
     parts.push('```');
-    parts.push(consoleErrors.join('\n'));
+    parts.push(consoleErrors.map(e => e.replace(/`/g, '\u02CB')).join('\n'));
     parts.push('```');
     parts.push('');
     parts.push('</details>');

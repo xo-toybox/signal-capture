@@ -31,9 +31,24 @@ export async function createServerClient() {
   });
 }
 
+function isLocalUrl(rawUrl: string): boolean {
+  try {
+    const { hostname } = new URL(rawUrl);
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+  } catch {
+    return false;
+  }
+}
+
 export function createServiceClient() {
   if (!isConfigured) {
     throw new Error('Supabase not configured');
+  }
+  if (process.env.NODE_ENV !== 'production' && url && !isLocalUrl(url)) {
+    throw new Error(
+      'Refusing to create service client against remote Supabase in development. ' +
+      'Use `make dev-docker` for local Supabase or `make db-pull` to seed local data.'
+    );
   }
   return createSupabaseClient(url!, serviceKey!);
 }

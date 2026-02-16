@@ -44,7 +44,7 @@ describe('GET /api/signals', () => {
 
   it('clamps limit to min 1', async () => {
     await GET(makeRequest('?limit=0'));
-    expect(getLastRange()).toEqual([0, 19]); // parseInt('0')||20 → 20, range(0, 19)
+    expect(getLastRange()).toEqual([0, 0]); // 0 clamped to min 1, range(0, 0)
   });
 
   it('clamps negative offset to 0', async () => {

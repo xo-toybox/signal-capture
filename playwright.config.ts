@@ -33,6 +33,11 @@ export default defineConfig({
     command: 'bunx next dev --port 3001',
     port: 3001,
     reuseExistingServer: false,
-    env: getLocalSupabaseEnv(),
+    env: {
+      ...getLocalSupabaseEnv(),
+      // Explicitly unset so bug-reporter "not configured" test works
+      GITHUB_TOKEN: '',
+      GITHUB_REPO: '',
+    },
   },
 });

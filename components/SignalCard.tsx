@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { SignalFeedItem } from '@/lib/types';
 import { STATUS_BG_COLORS } from '@/lib/constants';
+import InlineDeleteButton from './InlineDeleteButton';
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -69,8 +70,11 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
         )}
       </div>
 
-      <div className="flex-shrink-0 px-3 py-2.5 text-xs text-[#525252] font-mono self-start">
-        {relativeTime(signal.created_at)}
+      <div className="flex-shrink-0 flex items-center gap-1 px-3 py-2.5 self-start">
+        <span className="text-xs text-[#525252] font-mono">
+          {relativeTime(signal.created_at)}
+        </span>
+        <InlineDeleteButton signalId={signal.id} />
       </div>
     </Link>
   );

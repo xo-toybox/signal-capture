@@ -25,7 +25,9 @@ Single-user app with defense in depth across three layers:
 
 **Input validation** — URLs are parsed with `new URL()` and whitelisted to `http:`/`https:` protocols. `raw_input` is capped at 10k chars, `capture_context` at 5k.
 
-**Client exposure** — The browser only receives `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (read-only by RLS). The service role key never leaves the server.
+**Client exposure** — Only public keys are exposed to the browser (read-only by RLS). Secret keys never leave the server.
+
+**Dev write guard** — `createServiceClient()` refuses to connect to remote Supabase when `NODE_ENV !== 'production'`, preventing accidental writes to production from a dev server.
 
 ---
 
@@ -47,18 +49,24 @@ app/
     auth/callback/      # OAuth callback
     auth/test-session/  # Dev-only test auth
     signals/            # GET (list) + POST (capture) + DELETE
+    report/             # POST bug reports to GitHub Issues
 components/
   CaptureForm.tsx       # Text/voice/share input
   SignalFeed.tsx        # Realtime feed with pagination
   SignalCard.tsx        # Feed item card
   VoiceInput.tsx        # Web Speech API wrapper
   DeleteButton.tsx      # Two-click delete with confirmation
+  InlineDeleteButton.tsx # Inline delete with confirm state
+  BugReporter.tsx       # Bug report trigger button
+  BugReporterModal.tsx  # Bug report form modal
 lib/
   supabase.ts           # Browser client (realtime)
   supabase-server.ts    # Server client (cookies) + service client (RLS bypass)
   types.ts              # SignalRaw, SignalFeedItem, etc.
   constants.ts          # Shared status colors and labels
   mock-data.ts          # Demo data when Supabase is not configured
+  bug-report-types.ts   # BugReportPayload, BugReportError types
+  console-error-buffer.ts # Captures recent console errors for bug reports
 proxy.ts                # Auth middleware (Next.js 16 proxy)
 supabase/schema.sql     # Full database schema
 ```
@@ -72,8 +80,10 @@ supabase/schema.sql     # Full database schema
 
 ## Development
 
-This repo is security-first — all changes go through automated security review via Ralph Loop (`.ralph/`), and every PR should pass both unit and E2E tests (`make check`).
+Use `make dev` (mock data, no database) or `make dev-docker` (local Supabase via Docker). Do **not** run `bun run dev` directly.
 
 See `Makefile` for all workflows (`make help` to list). Env vars in `.env.example`, database schema in `supabase/schema.sql`.
+
+Every PR should pass `make check` (lint, typecheck, test, build).
 
 Runs with mock data when Supabase credentials are not configured. E2E tests use a local Supabase with password auth (no OAuth) — requires Docker.

@@ -18,7 +18,9 @@
 # misc
 .DS_Store
 *.pem
-.claude/
+.claude/*
+!.claude/skills/
+!.claude/agents/
 .playwright-mcp/
 
 # supabase

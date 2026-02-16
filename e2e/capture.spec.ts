@@ -55,4 +55,26 @@ test.describe('Signal capture form', () => {
     await page.getByRole('button', { name: /confirm delete/i }).click();
     await page.waitForURL('/');
   });
+
+  test('shows error toast when capture API fails', async ({ page }) => {
+    // Intercept POST /api/signals and return a 500 error
+    await page.route('**/api/signals', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Failed to capture signal' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    const textInput = page.getByPlaceholder(/url or thought/i);
+    await textInput.fill(`e2e-error-${Date.now()}`);
+    await page.getByRole('button', { name: /capture/i }).click();
+
+    // The CaptureForm shows "Failed to capture" toast on error
+    await expect(page.getByText(/failed to capture/i)).toBeVisible();
+  });
 });

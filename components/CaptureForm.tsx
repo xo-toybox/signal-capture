@@ -60,6 +60,11 @@ export default function CaptureForm() {
         });
 
         if (!res.ok) throw new Error('Capture failed');
+
+        const { signal } = await res.json();
+        if (signal) {
+          window.dispatchEvent(new CustomEvent('signal-captured', { detail: signal }));
+        }
       }
 
       setRawInput('');

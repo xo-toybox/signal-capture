@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
@@ -20,6 +20,14 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
   const supported = useSyncExternalStore(noop, getSupported, getServerSupported);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+  const onTranscriptRef = useRef(onTranscript);
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript;
+  }, [onTranscript]);
+
+  useEffect(() => {
+    return () => { recognitionRef.current?.abort(); };
+  }, []);
 
   const toggle = useCallback(() => {
     if (isRecording) {
@@ -42,7 +50,7 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
       for (let i = 0; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
       }
-      onTranscript(transcript);
+      onTranscriptRef.current(transcript);
     };
 
     recognition.onerror = () => {
@@ -56,7 +64,7 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
     recognitionRef.current = recognition;
     recognition.start();
     setIsRecording(true);
-  }, [isRecording, onTranscript]);
+  }, [isRecording]);
 
   if (!supported) return null;
 

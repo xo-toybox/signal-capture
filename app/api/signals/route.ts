@@ -103,8 +103,10 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createServerClient();
   const { searchParams } = request.nextUrl;
-  const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20') || 20, 1), 100);
-  const offset = Math.max(parseInt(searchParams.get('offset') || '0') || 0, 0);
+  const parsedLimit = parseInt(searchParams.get('limit') ?? '20');
+  const limit = Math.min(Math.max(Number.isNaN(parsedLimit) ? 20 : parsedLimit, 1), 100);
+  const parsedOffset = parseInt(searchParams.get('offset') ?? '0');
+  const offset = Math.max(Number.isNaN(parsedOffset) ? 0 : parsedOffset, 0);
 
   const { data, error } = await supabase
     .from('signals_feed')
