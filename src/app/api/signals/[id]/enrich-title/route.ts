@@ -1,4 +1,4 @@
-import { createServerClient, createServiceClient } from '@/lib/supabase-server';
+import { createServiceClient, getUser } from '@/lib/supabase-server';
 import { fetchPageTitle } from '@/lib/fetch-title';
 import { NextRequest } from 'next/server';
 
@@ -10,8 +10,7 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }

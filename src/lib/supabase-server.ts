@@ -40,6 +40,13 @@ function isLocalUrl(rawUrl: string): boolean {
   }
 }
 
+export async function getUser() {
+  if (process.env.NODE_ENV !== 'production') return { id: 'dev', email: 'dev@localhost' };
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
 export function createServiceClient() {
   if (!isConfigured) {
     throw new Error('Supabase not configured');

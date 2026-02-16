@@ -202,7 +202,7 @@ describe('POST /api/report', () => {
     expect(opts.headers['X-GitHub-Api-Version']).toBe('2022-11-28');
 
     const body = JSON.parse(opts.body);
-    expect(body.title).toBe('My Bug');
+    expect(body.title).toBe('[Bug] My Bug');
     expect(body.labels).toEqual(['bug']);
     expect(body.body).toContain('Steps to repro');
     expect(body.body).toContain('**Severity:** high');

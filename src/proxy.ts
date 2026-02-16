@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const allowedEmail = process.env.ALLOWED_EMAIL;
-  if (allowedEmail && process.env.NODE_ENV === 'production' && user.email !== allowedEmail) {
+  if (allowedEmail && process.env.NODE_ENV === 'production' && user && user.email !== allowedEmail) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('error', 'access_denied');

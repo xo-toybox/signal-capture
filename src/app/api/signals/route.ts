@@ -1,11 +1,5 @@
-import { createServerClient, createServiceClient } from '@/lib/supabase-server';
+import { createServerClient, createServiceClient, getUser } from '@/lib/supabase-server';
 import { NextRequest } from 'next/server';
-
-async function getUser() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
 
 export async function POST(request: NextRequest) {
   const user = await getUser();

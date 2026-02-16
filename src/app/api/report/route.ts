@@ -1,12 +1,6 @@
-import { createServerClient } from '@/lib/supabase-server';
+import { getUser } from '@/lib/supabase-server';
 import { NextRequest } from 'next/server';
 import type { Severity, ReportKind } from '@/lib/bug-report-types';
-
-async function getUser() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
 
 const VALID_SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
 

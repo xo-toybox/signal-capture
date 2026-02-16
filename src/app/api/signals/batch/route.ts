@@ -1,4 +1,4 @@
-import { createServerClient, createServiceClient } from '@/lib/supabase-server';
+import { createServiceClient, getUser } from '@/lib/supabase-server';
 import { NextRequest } from 'next/server';
 
 const MAX_BATCH = 100;
@@ -13,8 +13,7 @@ function safeUrl(s: string): string | null {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }

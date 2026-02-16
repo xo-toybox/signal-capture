@@ -39,11 +39,19 @@ describe('proxy', () => {
     expect(res.headers.get('location')).toBeNull();
   });
 
-  it('redirects unauthenticated user to /login', async () => {
+  it('redirects unauthenticated user to /login in production', async () => {
     mockUser = null;
+    vi.stubEnv('NODE_ENV', 'production');
     const res = await proxy(makeRequest('/dashboard'));
     expect(res.status).toBe(307);
     expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
+  });
+
+  it('allows unauthenticated user through in development', async () => {
+    mockUser = null;
+    vi.stubEnv('NODE_ENV', 'development');
+    const res = await proxy(makeRequest('/dashboard'));
+    expect(res.status).toBe(200);
   });
 
   it('allows authenticated user through', async () => {
