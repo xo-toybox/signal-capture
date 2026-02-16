@@ -1,8 +1,8 @@
 # Signal Capture
 
-Personal signal capture and intelligence pipeline. Capture URLs, thoughts, and voice notes — then enrich them with AI-extracted claims, novelty assessments, and cross-signal analysis.
+Personal signal capture and intelligence pipeline. Capture URLs, thoughts, and voice notes — auto-fetch page titles, triage with stars and archives, and annotate with inline notes. AI enrichment (claims, novelty, embeddings) is schema-ready but not yet wired.
 
-PWA with share target support for quick capture from any app on mobile. Signals can be filtered by active, starred, or archived status.
+The feed updates in realtime via Supabase subscriptions and can be filtered by active, starred, or archived status. Voice input (Web Speech API) is available on every text field — tap the mic and it inserts at the cursor. Capture context is click-to-edit inline (`Cmd+Enter` to save, `Esc` to cancel).
 
 Designed as a single-tenant app — no user_id columns, no multi-tenancy overhead. Access is gated to one Google account via `ALLOWED_EMAIL`. All signals belong to the sole operator.
 
@@ -12,6 +12,38 @@ Designed as a single-tenant app — no user_id columns, no multi-tenancy overhea
 - **Vercel:** Vercel dashboard → signal-capture project
 - **Supabase:** Supabase dashboard → signal-capture project
 - **Google Cloud:** project name `signal-capture`
+
+## PWA
+
+Install to home screen for standalone use. Share a URL from any app and it lands directly in the capture form via the Web Share Target API.
+
+- **iOS:** Safari → Share → Add to Home Screen
+- **Android:** Chrome menu → Install app
+- **Desktop:** Chrome address bar → Install icon
+
+## Chrome Extension
+
+A Chrome extension in `extension/` captures open tabs from the current browser window as signals.
+
+- **Popup UI** — select/deselect individual tabs, add shared context, duplicate URLs are flagged
+- **Context menu** — right-click any page → "Capture this page"
+- **Keyboard shortcut** — `Cmd+Shift+S` (Mac) / `Ctrl+Shift+S` (Windows)
+
+**Install:**
+1. Chrome → Extensions → Enable Developer Mode
+2. Load unpacked → select `extension/` directory
+
+## Bug Reports & Feature Requests
+
+A built-in reporter (floating "report" button, bottom-right) lets you file bugs or feature requests directly as GitHub Issues — no context switching required.
+
+- Toggle between **Bug** and **Feature** modes
+- Bugs include a severity picker (low / medium / high / critical)
+- Environment context is captured automatically (URL, viewport, user agent, recent console errors)
+- Submitted via `POST /api/report` → GitHub Issues API
+- Issue titles are prefixed `[Bug]` or `[Feature]`
+- Labels: `bug` or `enhancement`
+- Rate-limited to 10 reports per hour
 
 ## Security Model
 
@@ -84,15 +116,6 @@ supabase/schema.sql       # Full database schema
 - **signals_enriched** — AI-derived metadata (claims, tags, novelty, embeddings)
 - **signals_human** — manual annotations (notes, ratings, tier overrides)
 - **signals_feed** — unified view joining all three tables
-
-## Chrome Extension
-
-A Chrome extension in `extension/` captures all open tabs in the current browser window as signals.
-
-**Install:**
-1. Chrome → Extensions → Enable Developer Mode
-2. Load unpacked → select `extension/` directory
-3. Click the extension icon to capture all tabs
 
 ## GitHub Automation
 
