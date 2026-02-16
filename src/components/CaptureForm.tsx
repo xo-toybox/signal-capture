@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { isConfigured } from '@/lib/supabase';
+import { useVoiceInsert } from '@/lib/use-voice-insert';
 import VoiceInput from './VoiceInput';
 import type { InputMethod } from '@/lib/types';
 
@@ -16,6 +17,20 @@ export default function CaptureForm() {
   const contextRef = useRef<HTMLTextAreaElement>(null);
   const searchParams = useSearchParams();
 
+  const autoGrow = useCallback((el: HTMLTextAreaElement) => {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }, []);
+
+  const rawVoice = useVoiceInsert(rawRef, () => rawInput, (v) => {
+    setRawInput(v);
+    setInputMethod('voice');
+  }, autoGrow);
+
+  const contextVoice = useVoiceInsert(
+    contextRef, () => captureContext, setCaptureContext, autoGrow,
+  );
+
   useEffect(() => {
     const sharedUrl = searchParams.get('shared_url');
     const sharedText = searchParams.get('shared_text');
@@ -28,11 +43,6 @@ export default function CaptureForm() {
       setTimeout(() => contextRef.current?.focus(), 100);
     }
   }, [searchParams]);
-
-  const autoGrow = useCallback((el: HTMLTextAreaElement) => {
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
-  }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -115,11 +125,8 @@ export default function CaptureForm() {
             required
           />
           <VoiceInput
-            onTranscript={(text) => {
-              setRawInput(text);
-              setInputMethod('voice');
-              if (rawRef.current) autoGrow(rawRef.current);
-            }}
+            onStart={rawVoice.onStart}
+            onTranscript={rawVoice.onTranscript}
           />
         </div>
 
@@ -137,10 +144,8 @@ export default function CaptureForm() {
             className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#525252] resize-none outline-none transition-colors duration-150 overflow-hidden"
           />
           <VoiceInput
-            onTranscript={(text) => {
-              setCaptureContext(text);
-              if (contextRef.current) autoGrow(contextRef.current);
-            }}
+            onStart={contextVoice.onStart}
+            onTranscript={contextVoice.onTranscript}
           />
         </div>
 

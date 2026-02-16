@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
+  onStart?: () => void;
 }
 
 function getSpeechRecognition() {
@@ -15,15 +16,17 @@ const noop = () => () => {};
 const getSupported = () => !!getSpeechRecognition();
 const getServerSupported = () => false;
 
-export default function VoiceInput({ onTranscript }: VoiceInputProps) {
+export default function VoiceInput({ onTranscript, onStart }: VoiceInputProps) {
   const [isRecording, setIsRecording] = useState(false);
   const supported = useSyncExternalStore(noop, getSupported, getServerSupported);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const onTranscriptRef = useRef(onTranscript);
+  const onStartRef = useRef(onStart);
   useEffect(() => {
     onTranscriptRef.current = onTranscript;
-  }, [onTranscript]);
+    onStartRef.current = onStart;
+  }, [onTranscript, onStart]);
 
   useEffect(() => {
     return () => { recognitionRef.current?.abort(); };
@@ -62,6 +65,7 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
     };
 
     recognitionRef.current = recognition;
+    onStartRef.current?.();
     recognition.start();
     setIsRecording(true);
   }, [isRecording]);

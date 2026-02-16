@@ -41,7 +41,7 @@ A built-in reporter (floating "report" button, bottom-right) lets you file bugs 
 - Bugs include a severity picker (low / medium / high / critical)
 - Environment context is captured automatically (URL, viewport, user agent, recent console errors)
 - Submitted via `POST /api/report` → GitHub Issues API
-- Issue titles are prefixed `[Bug]` or `[Feature]`
+- GitHub issue titles are auto-prefixed `[Bug]` or `[Feature]` based on the selected mode
 - Labels: `bug` or `enhancement`
 - Rate-limited to 10 reports per hour
 

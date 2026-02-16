@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useVoiceInsert } from '@/lib/use-voice-insert';
 import VoiceInput from './VoiceInput';
 
 interface Props {
@@ -14,6 +15,11 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
   const [saved, setSaved] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const voice = useVoiceInsert(textareaRef, () => value, setValue, (el) => {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  });
 
   useEffect(() => {
     if (editing && textareaRef.current) {
@@ -83,13 +89,8 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
             rows={2}
           />
           <VoiceInput
-            onTranscript={(text) => {
-              setValue(text);
-              if (textareaRef.current) {
-                textareaRef.current.style.height = 'auto';
-                textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-              }
-            }}
+            onStart={voice.onStart}
+            onTranscript={voice.onTranscript}
           />
         </div>
         <div className="flex gap-2 text-xs font-mono">
