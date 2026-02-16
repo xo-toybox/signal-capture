@@ -116,9 +116,22 @@ export default function CaptureForm() {
           />
           <VoiceInput
             onTranscript={(text) => {
-              setRawInput(text);
-              setInputMethod('voice');
-              if (rawRef.current) autoGrow(rawRef.current);
+              const textarea = rawRef.current;
+              if (textarea) {
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const before = rawInput.substring(0, start);
+                const after = rawInput.substring(end);
+                const newValue = before + text + after;
+                setRawInput(newValue);
+                setInputMethod('voice');
+                // Move cursor to end of inserted text
+                setTimeout(() => {
+                  const newPos = start + text.length;
+                  textarea.setSelectionRange(newPos, newPos);
+                  autoGrow(textarea);
+                }, 0);
+              }
             }}
           />
         </div>
@@ -138,8 +151,21 @@ export default function CaptureForm() {
           />
           <VoiceInput
             onTranscript={(text) => {
-              setCaptureContext(text);
-              if (contextRef.current) autoGrow(contextRef.current);
+              const textarea = contextRef.current;
+              if (textarea) {
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const before = captureContext.substring(0, start);
+                const after = captureContext.substring(end);
+                const newValue = before + text + after;
+                setCaptureContext(newValue);
+                // Move cursor to end of inserted text
+                setTimeout(() => {
+                  const newPos = start + text.length;
+                  textarea.setSelectionRange(newPos, newPos);
+                  autoGrow(textarea);
+                }, 0);
+              }
             }}
           />
         </div>

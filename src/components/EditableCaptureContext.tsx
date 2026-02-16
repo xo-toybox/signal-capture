@@ -84,10 +84,21 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
           />
           <VoiceInput
             onTranscript={(text) => {
-              setValue(text);
-              if (textareaRef.current) {
-                textareaRef.current.style.height = 'auto';
-                textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+              const textarea = textareaRef.current;
+              if (textarea) {
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const before = value.substring(0, start);
+                const after = value.substring(end);
+                const newValue = before + text + after;
+                setValue(newValue);
+                // Move cursor to end of inserted text
+                setTimeout(() => {
+                  const newPos = start + text.length;
+                  textarea.setSelectionRange(newPos, newPos);
+                  textarea.style.height = 'auto';
+                  textarea.style.height = textarea.scrollHeight + 'px';
+                }, 0);
               }
             }}
           />
