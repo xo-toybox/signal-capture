@@ -84,6 +84,14 @@ describe('proxy', () => {
     expect(res.headers.get('location')).toBeNull();
   });
 
+  it('bypasses auth for /docs/*', async () => {
+    mockUser = null;
+    vi.stubEnv('NODE_ENV', 'production');
+    const res = await proxy(makeRequest('/docs/features'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('location')).toBeNull();
+  });
+
   it('redirects authenticated user on /login to /', async () => {
     mockUser = { id: 'user-1', email: 'test@example.com' };
     const res = await proxy(makeRequest('/login'));

@@ -17,6 +17,20 @@ Personal signal-capture and enrichment tool. Single-tenant, dark-only UI.
 - Components: PascalCase files, `'use client'` directive when needed
 - Utilities: kebab-case files in `src/lib/`
 
+## Access Control
+
+Two tiers, enforced by `proxy.ts` + route groups:
+
+| Tier | Route group | Paths | Notes |
+|---|---|---|---|
+| Public | `(public)` | `/login`, `/docs/*` | No auth, no BugReporter |
+| Authenticated | `(app)` | `/`, `/signal/*` | Google OAuth + `ALLOWED_EMAIL` |
+
+API routes live outside groups — auth via proxy + route-level `getUser()`.
+Admin/user separation deferred (single-tenant: owner = admin = user).
+
+When adding a new page: place in the correct route group. If public, also add path prefix to `PUBLIC_PATHS` in `proxy.ts`.
+
 ## API Route Patterns
 
 - Auth check first: call `getUser()`, return 401 if missing
@@ -26,7 +40,12 @@ Personal signal-capture and enrichment tool. Single-tenant, dark-only UI.
 
 ## Workflows
 
-Standard dev, test, and build commands are `make` targets — run `make help` to list them. Run `make check` before considering work complete.
+**Always use `make` targets** — never raw `bun run dev`, `bun run build`, etc. The Makefile sets env vars, output dirs, and ports correctly. Run `make help` to list available targets. Key ones:
+
+- `make dev` — dev server on :3000 with mock data
+- `make dev-browse` — dev server on :3100 for Playwright/MCP browser testing
+- `make check` — lint + typecheck + test + build (run before considering work complete)
+- `make test` / `make test-e2e` — unit / E2E tests
 
 ## Testing
 

@@ -1,6 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Public routes — mirrors (public) route group in src/app/
+// Update both when adding new public pages.
+const PUBLIC_PATHS = ['/login', '/docs', '/api/auth'];
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -32,7 +36,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  if (pathname === '/login' || pathname.startsWith('/api/auth')) {
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     if (user && pathname === '/login' && !request.nextUrl.searchParams.has('error')) {
       return NextResponse.redirect(new URL('/', request.url));
     }

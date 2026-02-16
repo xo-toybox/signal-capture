@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import CaptureForm from '@/components/CaptureForm';
 import SignalFeed from '@/components/SignalFeed';
 import { createServerClient, isConfigured } from '@/lib/supabase-server';
@@ -23,6 +24,13 @@ export default async function Home() {
         <h1 className="text-xs font-mono uppercase tracking-widest text-[#737373]">
           Signal Capture
         </h1>
+        <div className="flex-1" />
+        <Link
+          href="/docs"
+          className="text-xs font-mono text-[#525252] hover:text-[#737373] transition-colors"
+        >
+          docs
+        </Link>
       </header>
 
       <Suspense fallback={null}>
