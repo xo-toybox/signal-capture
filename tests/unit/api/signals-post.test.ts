@@ -65,7 +65,7 @@ describe('POST /api/signals', () => {
   });
 
   it('passes valid input_method through', async () => {
-    for (const method of ['text', 'voice', 'share']) {
+    for (const method of ['text', 'voice', 'share', 'extension']) {
       await POST(makeRequest({ raw_input: 'hello', input_method: method }));
       const inserted = getLastInsert() as Record<string, unknown>;
       expect(inserted.input_method).toBe(method);

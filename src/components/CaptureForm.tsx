@@ -34,6 +34,14 @@ export default function CaptureForm() {
     el.style.height = el.scrollHeight + 'px';
   }, []);
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      const form = e.currentTarget.closest('form');
+      if (form) form.requestSubmit();
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rawInput.trim() || submitting) return;
@@ -64,6 +72,10 @@ export default function CaptureForm() {
         const { signal } = await res.json();
         if (signal) {
           window.dispatchEvent(new CustomEvent('signal-captured', { detail: signal }));
+          // Fire-and-forget title fetch for URLs
+          if (signal.source_url) {
+            fetch(`/api/signals/${signal.id}/enrich-title`, { method: 'POST', credentials: 'include' }).catch(() => {});
+          }
         }
       }
 
@@ -96,6 +108,7 @@ export default function CaptureForm() {
               if (inputMethod !== 'share') setInputMethod('text');
               autoGrow(e.target);
             }}
+            onKeyDown={handleKeyDown}
             placeholder="URL or thought..."
             rows={1}
             className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#525252] resize-none outline-none transition-colors duration-150 overflow-hidden"
@@ -118,6 +131,7 @@ export default function CaptureForm() {
               setCaptureContext(e.target.value);
               autoGrow(e.target);
             }}
+            onKeyDown={handleKeyDown}
             placeholder="Why interesting? (optional)"
             rows={1}
             className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#525252] resize-none outline-none transition-colors duration-150 overflow-hidden"

@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import type { SignalFeedItem } from '@/lib/types';
+import { safeArray, type SignalFeedItem } from '@/lib/types';
 import { STATUS_BG_COLORS } from '@/lib/constants';
 import InlineDeleteButton from './InlineDeleteButton';
+import StarButton from './StarButton';
+import ArchiveButton from './ArchiveButton';
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -24,8 +26,9 @@ function relativeTime(dateStr: string): string {
 
 export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
   const isEnriched = signal.processing_status === 'complete' && signal.source_title;
-  const tags = signal.domain_tags?.slice(0, 3) ?? [];
-  const claimCount = signal.key_claims?.length ?? 0;
+  const displayTitle = signal.source_title ?? signal.fetched_title;
+  const tags = safeArray(signal.domain_tags).slice(0, 3);
+  const claimCount = safeArray(signal.key_claims).length;
 
   return (
     <Link
@@ -58,8 +61,8 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
           </>
         ) : (
           <>
-            <div className="text-sm font-mono text-[#e5e5e5] truncate">
-              {signal.raw_input}
+            <div className={`text-sm ${displayTitle ? '' : 'font-mono'} text-[#e5e5e5] truncate`}>
+              {displayTitle ?? signal.raw_input}
             </div>
             {signal.capture_context && (
               <div className="text-xs text-[#737373] mt-1 truncate">
@@ -71,6 +74,8 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
       </div>
 
       <div className="flex-shrink-0 flex items-center gap-1 px-3 py-2.5 self-start">
+        <StarButton signalId={signal.id} isStarred={signal.is_starred} />
+        <ArchiveButton signalId={signal.id} isArchived={signal.is_archived} />
         <span className="text-xs text-[#525252] font-mono">
           {relativeTime(signal.created_at)}
         </span>

@@ -16,19 +16,25 @@ CREATE TABLE signals_raw (
   raw_input TEXT NOT NULL,
   capture_context TEXT,
   input_method TEXT DEFAULT 'text'
-    CHECK(input_method IN ('text', 'voice', 'share')),
+    CHECK(input_method IN ('text', 'voice', 'share', 'extension')),
 
   processing_status TEXT DEFAULT 'pending'
     CHECK(processing_status IN (
       'pending', 'processing', 'review',
       'complete', 'dismissed', 'failed'
     )),
-  processed_at TIMESTAMPTZ
+  processed_at TIMESTAMPTZ,
+
+  fetched_title TEXT,
+  is_starred BOOLEAN NOT NULL DEFAULT false,
+  is_archived BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE INDEX idx_signals_raw_status ON signals_raw(processing_status)
   WHERE processing_status = 'pending';
 CREATE INDEX idx_signals_raw_created ON signals_raw(created_at DESC);
+CREATE INDEX idx_signals_raw_starred ON signals_raw(is_starred) WHERE is_starred = true;
+CREATE INDEX idx_signals_raw_archived ON signals_raw(is_archived) WHERE is_archived = true;
 
 
 -- ============================================================
@@ -141,26 +147,13 @@ CREATE INDEX idx_refinements_signal ON signals_refinements(signal_id);
 -- ============================================================
 CREATE VIEW signals_feed WITH (security_invoker = on) AS
 SELECT
-  r.id,
-  r.created_at,
-  r.source_url,
-  r.raw_input,
-  r.capture_context,
-  r.input_method,
-  r.processing_status,
-  r.processed_at,
-  e.source_title,
-  e.key_claims,
-  e.novelty_assessment,
-  e.domain_tags,
-  e.signal_type,
-  e.source_tier,
-  e.frontier_status,
-  e.confidence,
+  r.id, r.created_at, r.source_url, r.raw_input, r.capture_context,
+  r.input_method, r.processing_status, r.processed_at,
+  r.fetched_title, r.is_starred, r.is_archived,
+  e.source_title, e.key_claims, e.novelty_assessment, e.domain_tags,
+  e.signal_type, e.source_tier, e.frontier_status, e.confidence,
   e.cross_signal_notes,
-  h.human_note,
-  h.human_rating,
-  h.tier_override
+  h.human_note, h.human_rating, h.tier_override
 FROM signals_raw r
 LEFT JOIN signals_enriched e ON e.signal_id = r.id
 LEFT JOIN signals_human h ON h.signal_id = r.id

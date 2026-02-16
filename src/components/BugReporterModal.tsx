@@ -2,10 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrors } from '@/lib/console-error-buffer';
-import type { Severity, BugReportSuccess } from '@/lib/bug-report-types';
+import type { Severity, ReportKind, BugReportSuccess } from '@/lib/bug-report-types';
 import { SEVERITY_COLORS } from '@/lib/bug-report-types';
 
 const SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
+const KINDS: { key: ReportKind; label: string; dot: string }[] = [
+  { key: 'bug', label: 'Bug', dot: '#ef4444' },
+  { key: 'feature', label: 'Feature', dot: '#3b82f6' },
+];
 
 interface Props {
   open: boolean;
@@ -14,6 +18,7 @@ interface Props {
 }
 
 export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
+  const [kind, setKind] = useState<ReportKind>('bug');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [severity, setSeverity] = useState<Severity>('medium');
@@ -25,6 +30,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
   // Reset form when opening
   useEffect(() => {
     if (open) {
+      setKind('bug');
       setTitle('');
       setDescription('');
       setSeverity('medium');
@@ -83,6 +89,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim(),
+          kind,
           severity,
           url: location.href,
           userAgent: navigator.userAgent,
@@ -118,7 +125,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     >
       <div
         ref={panelRef}
-        className="relative w-full max-w-[26rem] mx-4 bg-[#0a0a0a] border border-white/[0.08] rounded-[10px] overflow-hidden modal-enter"
+        className="relative w-full max-w-[26rem] mx-4 bg-[#141414] border border-white/[0.15] rounded-[10px] overflow-hidden modal-enter shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
       >
         {/* Top accent line */}
         <div className="h-px bg-gradient-to-r from-[#3b82f6] to-[#3b82f6]/0" style={{ animation: 'border-draw 400ms ease-out forwards' }} />
@@ -127,12 +134,38 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="block w-1.5 h-1.5 rounded-full bg-[#ef4444]" style={{ boxShadow: '0 0 6px #ef4444' }} />
+              <span className="block w-1.5 h-1.5 rounded-full" style={{ background: kind === 'bug' ? '#ef4444' : '#3b82f6', boxShadow: `0 0 6px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}` }} />
               <span id="bug-report-title" className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#737373]">
-                Bug Report
+                {kind === 'bug' ? 'Bug Report' : 'Feature Request'}
               </span>
             </div>
             <span className="font-mono text-[10px] text-[#525252]">esc to close</span>
+          </div>
+
+          {/* Kind toggle */}
+          <div className="flex gap-[3px] border border-white/[0.08] rounded-[8px] p-[3px]">
+            {KINDS.map(k => (
+              <button
+                key={k.key}
+                type="button"
+                onClick={() => setKind(k.key)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-[6px] font-mono text-[11px] transition-colors"
+                style={{
+                  background: kind === k.key ? `${k.dot}12` : 'transparent',
+                  color: kind === k.key ? k.dot : '#525252',
+                }}
+              >
+                <span
+                  className="block w-1.5 h-1.5 rounded-full"
+                  style={{
+                    background: k.dot,
+                    opacity: kind === k.key ? 1 : 0.5,
+                    boxShadow: kind === k.key ? `0 0 6px ${k.dot}` : 'none',
+                  }}
+                />
+                {k.label}
+              </button>
+            ))}
           </div>
 
           {/* Title */}
@@ -144,8 +177,8 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={256}
-              className="w-full bg-transparent border border-white/[0.08] rounded-[6px] px-3 py-2 font-mono text-[13px] text-[#e5e5e5] placeholder:text-[#525252] outline-none focus:border-white/[0.15] transition-colors"
-              placeholder="Brief description of the issue"
+              className="w-full bg-transparent border border-white/[0.10] rounded-[6px] px-3 py-2 font-mono text-[13px] text-[#e5e5e5] placeholder:text-[#525252] outline-none focus:border-white/[0.20] transition-colors"
+              placeholder={kind === 'bug' ? 'Brief description of the issue' : 'What would you like to see?'}
             />
           </div>
 
@@ -158,43 +191,45 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full bg-transparent border border-white/[0.08] rounded-[6px] px-3 py-2 font-mono text-[13px] text-[#e5e5e5] placeholder:text-[#525252] outline-none focus:border-white/[0.15] transition-colors resize-none"
-              placeholder="Steps to reproduce, expected vs actual behavior..."
+              className="w-full bg-transparent border border-white/[0.10] rounded-[6px] px-3 py-2 font-mono text-[13px] text-[#e5e5e5] placeholder:text-[#525252] outline-none focus:border-white/[0.20] transition-colors resize-none"
+              placeholder={kind === 'bug' ? 'Steps to reproduce, expected vs actual behavior...' : 'Describe the feature and why it would be useful...'}
             />
           </div>
 
-          {/* Severity */}
-          <div className="space-y-1.5">
-            <label className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#525252]">Severity</label>
-            <div className="flex gap-[3px] border border-white/[0.08] rounded-[8px] p-[3px]">
-              {SEVERITIES.map((s) => {
-                const selected = severity === s;
-                const colors = SEVERITY_COLORS[s];
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSeverity(s)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-[6px] font-mono text-[11px] capitalize transition-colors"
-                    style={{
-                      background: selected ? colors.bg : 'transparent',
-                      color: selected ? colors.text : '#525252',
-                    }}
-                  >
-                    <span
-                      className="block w-1.5 h-1.5 rounded-full"
+          {/* Severity — bugs only */}
+          {kind === 'bug' && (
+            <div className="space-y-1.5">
+              <label className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#525252]">Severity</label>
+              <div className="flex gap-[3px] border border-white/[0.08] rounded-[8px] p-[3px]">
+                {SEVERITIES.map((s) => {
+                  const selected = severity === s;
+                  const colors = SEVERITY_COLORS[s];
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSeverity(s)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-[6px] font-mono text-[11px] capitalize transition-colors"
                       style={{
-                        background: colors.dot,
-                        opacity: selected ? 1 : 0.5,
-                        boxShadow: selected ? `0 0 6px ${colors.dot}` : 'none',
+                        background: selected ? colors.bg : 'transparent',
+                        color: selected ? colors.text : '#525252',
                       }}
-                    />
-                    {s}
-                  </button>
-                );
-              })}
+                    >
+                      <span
+                        className="block w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background: colors.dot,
+                          opacity: selected ? 1 : 0.5,
+                          boxShadow: selected ? `0 0 6px ${colors.dot}` : 'none',
+                        }}
+                      />
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Error */}
           {error && (
@@ -209,7 +244,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 rounded-[6px] border border-white/[0.08] bg-transparent font-mono text-[13px] text-[#737373] transition-colors hover:border-white/[0.15] disabled:opacity-50"
+              className="px-4 py-2 rounded-[6px] border border-white/[0.10] bg-transparent font-mono text-[13px] text-[#737373] transition-colors hover:border-white/[0.20] disabled:opacity-50"
             >
               Cancel
             </button>

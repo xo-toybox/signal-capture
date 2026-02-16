@@ -6,7 +6,7 @@ export type ProcessingStatus =
   | 'dismissed'
   | 'failed';
 
-export type InputMethod = 'text' | 'voice' | 'share';
+export type InputMethod = 'text' | 'voice' | 'share' | 'extension';
 
 export interface SignalRaw {
   id: string;
@@ -17,6 +17,9 @@ export interface SignalRaw {
   input_method: InputMethod;
   processing_status: ProcessingStatus;
   processed_at: string | null;
+  fetched_title: string | null;
+  is_starred: boolean;
+  is_archived: boolean;
 }
 
 export interface SignalFeedItem {
@@ -28,6 +31,9 @@ export interface SignalFeedItem {
   input_method: InputMethod;
   processing_status: ProcessingStatus;
   processed_at: string | null;
+  fetched_title: string | null;
+  is_starred: boolean;
+  is_archived: boolean;
   // Enrichment (null if not enriched)
   source_title: string | null;
   key_claims: string[] | null;
@@ -42,4 +48,9 @@ export interface SignalFeedItem {
   human_note: string | null;
   human_rating: number | null;
   tier_override: string | null;
+}
+
+/** Safely coerce a JSONB value to string[]. Returns [] if not an array. */
+export function safeArray(value: unknown): string[] {
+  return Array.isArray(value) ? value : [];
 }

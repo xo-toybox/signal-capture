@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase-server';
 import { NextRequest } from 'next/server';
-import type { Severity } from '@/lib/bug-report-types';
+import type { Severity, ReportKind } from '@/lib/bug-report-types';
 
 async function getUser() {
   const supabase = await createServerClient();
@@ -47,6 +47,10 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'title is required and must be under 256 chars' }, { status: 400 });
   }
 
+  // Validate kind
+  const validKinds: ReportKind[] = ['bug', 'feature'];
+  const kind: ReportKind = validKinds.includes(body.kind) ? body.kind : 'bug';
+
   // Validate severity
   const severity: Severity = VALID_SEVERITIES.includes(body.severity) ? body.severity : 'medium';
 
@@ -75,7 +79,9 @@ export async function POST(request: NextRequest) {
   const parts: string[] = [];
   if (description) parts.push(description);
   parts.push('');
-  parts.push(`**Severity:** ${severity}`);
+  if (kind === 'bug') {
+    parts.push(`**Severity:** ${severity}`);
+  }
   parts.push('');
   parts.push('<details><summary>Environment</summary>');
   parts.push('');
@@ -109,9 +115,9 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title,
+        title: kind === 'feature' ? `[Feature] ${title}` : title,
         body: issueBody,
-        labels: ['bug'],
+        labels: [kind === 'feature' ? 'enhancement' : 'bug'],
       }),
     });
 

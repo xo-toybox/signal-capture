@@ -2,8 +2,11 @@ import { createServerClient, isConfigured } from '@/lib/supabase-server';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import type { SignalFeedItem } from '@/lib/types';
+import { safeArray, type SignalFeedItem } from '@/lib/types';
 import DeleteButton from '@/components/DeleteButton';
+import EditableCaptureContext from '@/components/EditableCaptureContext';
+import StarButton from '@/components/StarButton';
+import ArchiveButton from '@/components/ArchiveButton';
 import { STATUS_LABELS, STATUS_TEXT_COLORS } from '@/lib/constants';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -89,15 +92,22 @@ export default async function SignalDetail({
       </Link>
 
       <div className="mt-4">
-        {isEnriched && s.source_title ? (
-          <h1 className="text-lg text-[#e5e5e5] leading-tight">{s.source_title}</h1>
-        ) : (
-          <h1 className="text-lg font-mono text-[#e5e5e5] leading-tight">
-            {s.raw_input.length > 100 ? s.raw_input.slice(0, 100) + '...' : s.raw_input}
-          </h1>
-        )}
+        {(() => {
+          const displayTitle = s.source_title ?? s.fetched_title;
+          if (displayTitle) {
+            return <h1 className="text-lg text-[#e5e5e5] leading-tight">{displayTitle}</h1>;
+          }
+          return (
+            <h1 className="text-lg font-mono text-[#e5e5e5] leading-tight">
+              {s.raw_input.length > 100 ? s.raw_input.slice(0, 100) + '...' : s.raw_input}
+            </h1>
+          );
+        })()}
 
-        <div className="flex items-center gap-2 mt-2 text-xs">
+        <div className="group flex items-center gap-2 mt-2 text-xs">
+          <StarButton signalId={s.id} isStarred={s.is_starred} />
+          <ArchiveButton signalId={s.id} isArchived={s.is_archived} />
+          <span className="text-white/10">|</span>
           <span className={STATUS_TEXT_COLORS[s.processing_status]}>
             {STATUS_LABELS[s.processing_status]}
           </span>
@@ -122,11 +132,7 @@ export default async function SignalDetail({
       <div className="font-mono text-sm text-[#e5e5e5] whitespace-pre-wrap leading-relaxed">
         {s.raw_input}
       </div>
-      {s.capture_context && (
-        <div className="mt-2 text-sm text-[#737373] italic">
-          {s.capture_context}
-        </div>
-      )}
+      <EditableCaptureContext signalId={s.id} initialValue={s.capture_context} />
       {validatedSourceUrl && (
         <a
           href={validatedSourceUrl}
@@ -140,11 +146,11 @@ export default async function SignalDetail({
 
       {isEnriched && (
         <>
-          {s.key_claims && s.key_claims.length > 0 && (
+          {safeArray(s.key_claims).length > 0 && (
             <>
               <SectionHeader label="Key Claims" />
               <ul className="space-y-1.5">
-                {s.key_claims.map((claim, i) => (
+                {safeArray(s.key_claims).map((claim, i) => (
                   <li key={i} className="flex gap-2 text-sm font-mono">
                     <span className="text-[#525252] flex-shrink-0">-</span>
                     <span className="text-[#e5e5e5]">{claim}</span>
@@ -163,11 +169,11 @@ export default async function SignalDetail({
             </>
           )}
 
-          {s.domain_tags && s.domain_tags.length > 0 && (
+          {safeArray(s.domain_tags).length > 0 && (
             <>
               <SectionHeader label="Tags" />
               <div className="flex flex-wrap gap-1.5">
-                {s.domain_tags.map((tag, i) => (
+                {safeArray(s.domain_tags).map((tag, i) => (
                   <span
                     key={i}
                     className="px-2 py-0.5 text-xs font-mono text-[#737373] border border-white/[0.06] rounded"

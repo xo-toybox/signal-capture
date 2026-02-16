@@ -2,7 +2,7 @@
 
 Personal signal capture and intelligence pipeline. Capture URLs, thoughts, and voice notes — then enrich them with AI-extracted claims, novelty assessments, and cross-signal analysis.
 
-PWA with share target support for quick capture from any app on mobile.
+PWA with share target support for quick capture from any app on mobile. Signals can be filtered by active, starred, or archived status.
 
 Designed as a single-tenant app — no user_id columns, no multi-tenancy overhead. Access is gated to one Google account via `ALLOWED_EMAIL`. All signals belong to the sole operator.
 
@@ -41,34 +41,41 @@ Single-user app with defense in depth across three layers:
 ## Architecture
 
 ```
-app/
-  page.tsx              # Feed + capture form
-  login/page.tsx        # Google OAuth login
-  signal/[id]/page.tsx  # Signal detail view
-  api/
-    auth/callback/      # OAuth callback
-    auth/test-session/  # Dev-only test auth
-    signals/            # GET (list) + POST (capture) + DELETE
-    report/             # POST bug reports to GitHub Issues
-components/
-  CaptureForm.tsx       # Text/voice/share input
-  SignalFeed.tsx        # Realtime feed with pagination
-  SignalCard.tsx        # Feed item card
-  VoiceInput.tsx        # Web Speech API wrapper
-  DeleteButton.tsx      # Two-click delete with confirmation
-  InlineDeleteButton.tsx # Inline delete with confirm state
-  BugReporter.tsx       # Bug report trigger button
-  BugReporterModal.tsx  # Bug report form modal
-lib/
-  supabase.ts           # Browser client (realtime)
-  supabase-server.ts    # Server client (cookies) + service client (RLS bypass)
-  types.ts              # SignalRaw, SignalFeedItem, etc.
-  constants.ts          # Shared status colors and labels
-  mock-data.ts          # Demo data when Supabase is not configured
-  bug-report-types.ts   # BugReportPayload, BugReportError types
-  console-error-buffer.ts # Captures recent console errors for bug reports
-proxy.ts                # Auth middleware (Next.js 16 proxy)
-supabase/schema.sql     # Full database schema
+src/
+  app/
+    page.tsx              # Feed + capture form
+    login/page.tsx        # Google OAuth login
+    signal/[id]/page.tsx  # Signal detail view
+    api/
+      auth/callback/      # OAuth callback
+      auth/test-session/  # Dev-only test auth
+      signals/            # GET (list) + POST (capture) + PATCH (update) + DELETE
+      signals/[id]/enrich-title/  # POST enrich page title
+      signals/batch/      # POST batch capture (extension)
+      report/             # POST bug reports to GitHub Issues
+  components/
+    CaptureForm.tsx       # Text/voice/share input
+    SignalFeed.tsx        # Realtime feed with pagination
+    SignalCard.tsx        # Feed item card
+    VoiceInput.tsx        # Web Speech API wrapper
+    DeleteButton.tsx      # Two-click delete with confirmation
+    InlineDeleteButton.tsx # Inline delete with confirm state
+    BugReporter.tsx       # Bug report trigger button
+    BugReporterModal.tsx  # Bug report form modal
+    EditableCaptureContext.tsx # Inline editable capture_context field
+    StarButton.tsx        # Star/unstar toggle
+    ArchiveButton.tsx     # Archive/unarchive toggle
+  lib/
+    supabase.ts           # Browser client (realtime)
+    supabase-server.ts    # Server client (cookies) + service client (RLS bypass)
+    types.ts              # SignalRaw, SignalFeedItem, etc.
+    constants.ts          # Shared status colors and labels
+    mock-data.ts          # Demo data when Supabase is not configured
+    bug-report-types.ts   # BugReportPayload, BugReportError types
+    fetch-title.ts        # Server-side page title fetcher
+    console-error-buffer.ts # Captures recent console errors for bug reports
+  proxy.ts                # Auth middleware (Next.js 16 proxy)
+supabase/schema.sql       # Full database schema
 ```
 
 ### Data Model
@@ -77,6 +84,15 @@ supabase/schema.sql     # Full database schema
 - **signals_enriched** — AI-derived metadata (claims, tags, novelty, embeddings)
 - **signals_human** — manual annotations (notes, ratings, tier overrides)
 - **signals_feed** — unified view joining all three tables
+
+## Chrome Extension
+
+A Chrome extension in `extension/` captures all open tabs in the current browser window as signals.
+
+**Install:**
+1. Chrome → Extensions → Enable Developer Mode
+2. Load unpacked → select `extension/` directory
+3. Click the extension icon to capture all tabs
 
 ## Development
 

@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     ".coverage/**",
+    // Chrome extension (standalone, not part of Next.js)
+    "extension/**",
   ]),
 ]);
 

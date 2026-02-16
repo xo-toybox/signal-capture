@@ -30,10 +30,10 @@ export default function BugReporter() {
       <button
         type="button"
         onClick={() => setModalOpen(true)}
-        aria-label="Report a bug"
-        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 border border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-sm rounded-full cursor-pointer transition-all duration-150 hover:border-[#ef4444]/25 hover:bg-[#ef4444]/[0.04] group"
+        aria-label="Report a bug or request a feature"
+        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 border border-white/[0.12] bg-[#141414]/90 backdrop-blur-sm rounded-full cursor-pointer transition-all duration-150 hover:border-[#3b82f6]/30 hover:bg-[#3b82f6]/[0.04] group"
       >
-        <span className="block w-1.5 h-1.5 rounded-full bg-[#ef4444] transition-shadow duration-150 group-hover:shadow-[0_0_6px_#ef4444]" />
+        <span className="block w-1.5 h-1.5 rounded-full bg-[#3b82f6] transition-shadow duration-150 group-hover:shadow-[0_0_6px_#3b82f6]" />
         <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#525252] transition-colors duration-150 group-hover:text-[#737373]">
           report
         </span>
@@ -51,7 +51,7 @@ export default function BugReporter() {
           href={toast.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-14 right-4 z-50 flex items-center gap-2 px-3 py-2 border border-[#22c55e]/15 bg-[#0a0a0a]/90 backdrop-blur-sm rounded-[8px] toast-enter no-underline hover:border-[#22c55e]/30 transition-colors"
+          className="fixed bottom-14 right-4 z-50 flex items-center gap-2 px-3 py-2 border border-[#22c55e]/25 bg-[#141414]/90 backdrop-blur-sm rounded-[8px] toast-enter no-underline hover:border-[#22c55e]/40 transition-colors shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
         >
           <span className="block w-[5px] h-[5px] rounded-full bg-[#22c55e]" style={{ boxShadow: '0 0 6px #22c55e' }} />
           <span className="font-mono text-[12px] text-[#22c55e]">

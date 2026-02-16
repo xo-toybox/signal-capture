@@ -1,9 +1,11 @@
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
+export type ReportKind = 'bug' | 'feature';
 
 export interface BugReportPayload {
   title: string;
   description: string;
   severity: Severity;
+  kind: ReportKind;
   url: string;
   userAgent: string;
   viewport: string;
