@@ -40,19 +40,6 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     }
   }, [open]);
 
-  // Escape to close
-  useEffect(() => {
-    if (!open) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [open, onClose]);
-
   // Focus trap
   const handleTabTrap = useCallback((e: KeyboardEvent) => {
     if (e.key !== 'Tab' || !panelRef.current) return;
@@ -77,7 +64,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     return () => window.removeEventListener('keydown', handleTabTrap);
   }, [open, handleTabTrap]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!title.trim() || submitting) return;
     setSubmitting(true);
     setError('');
@@ -111,7 +98,23 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [title, submitting, description, kind, severity, onSuccess]);
+
+  // Escape to close, Cmd+Enter to submit
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [open, onClose, handleSubmit]);
 
   if (!open) return null;
 
