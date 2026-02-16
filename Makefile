@@ -1,24 +1,32 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help dev dev-mobile dev-docker setup test test-e2e typecheck lint check build clean nuke db-push db-reset _ensure-docker _ensure-supabase _ensure-unlinked
+.PHONY: help dev dev-mobile dev-docker dev-browse dev-browse-docker setup test test-e2e test-e2e-headed test-e2e-ui test-e2e-report test-e2e-install typecheck lint check build clean nuke db-push db-reset _ensure-docker _ensure-supabase _ensure-unlinked
+
+ifdef SPEC
+  PLAYWRIGHT_SPEC := tests/e2e/$(SPEC).spec.ts
+else
+  PLAYWRIGHT_SPEC :=
+endif
 
 # --- Help ---
 
 help: ## Show available commands
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# Ports: dev=3000  dev-mobile=3001  dev-docker=3002  e2e/browse=3100
 
 # --- Dev ---
 
-dev: ## Start dev server with mock data (no database)
+dev: ## Start dev server on :3000 with mock data (no database)
 	NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= SUPABASE_SERVICE_ROLE_KEY= \
 		bun run dev
 
-dev-mobile: ## Start dev server on port 3001 for mobile side-by-side testing
+dev-mobile: ## Start dev server on :3001 for mobile side-by-side testing
 	NEXT_DIST_DIR=.next-mobile NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= SUPABASE_SERVICE_ROLE_KEY= \
 		bun run dev --port 3001
 
-dev-docker: db-reset ## Start dev server with local Supabase (requires Docker)
+dev-docker: db-reset ## Start dev server on :3002 with local Supabase (requires Docker)
 	eval "$$(supabase status -o env \
 			--override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
 			--override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
@@ -26,13 +34,37 @@ dev-docker: db-reset ## Start dev server with local Supabase (requires Docker)
 		| sed 's/^/export /')" && \
 		NEXT_DIST_DIR=.next-docker ALLOWED_EMAIL= bun run dev --port 3002
 
+dev-browse: ## Dev server on :3100 for Playwright/MCP browsing (mock)
+	NEXT_DIST_DIR=.next-e2e NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= SUPABASE_SERVICE_ROLE_KEY= \
+		bun run dev --port 3100
+
+dev-browse-docker: _ensure-supabase ## Dev server on :3100 for Playwright/MCP browsing (Docker)
+	eval "$$(supabase status -o env \
+			--override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+			--override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+			--override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+		| sed 's/^/export /')" && \
+		NEXT_DIST_DIR=.next-e2e ALLOWED_EMAIL= bun run dev --port 3100
+
 # --- Test ---
 
 test: ## Run unit tests
 	bun run test
 
-test-e2e: _ensure-supabase ## Run E2E tests (requires Docker)
-	bun run test:e2e
+test-e2e: _ensure-supabase ## Run E2E tests (headless). SPEC=auth for single file
+	bun run test:e2e $(PLAYWRIGHT_SPEC)
+
+test-e2e-headed: _ensure-supabase ## Run E2E tests with visible browser
+	bunx playwright test --headed $(PLAYWRIGHT_SPEC)
+
+test-e2e-ui: _ensure-supabase ## Open Playwright interactive UI mode
+	bunx playwright test --ui
+
+test-e2e-report: ## Open last Playwright HTML report
+	bunx playwright show-report
+
+test-e2e-install: ## Install Playwright browsers (first-time setup)
+	bunx playwright install
 
 # --- Quality ---
 
@@ -68,9 +100,7 @@ clean: ## Remove build artifacts
 	rm -rf .next .next-* .coverage .test-results .tsbuildinfo
 
 nuke: ## Remove build artifacts and node_modules
-	@echo "This will delete .next/ and node_modules/."
-	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = y ] || { echo "Aborted."; exit 1; }
-	rm -rf .next node_modules
+	rm -rf .next .next-* .coverage .test-results .tsbuildinfo node_modules
 
 # --- Internal ---
 

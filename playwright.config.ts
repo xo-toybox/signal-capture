@@ -14,13 +14,20 @@ function getLocalSupabaseEnv() {
       SUPABASE_SERVICE_ROLE_KEY: s.SERVICE_ROLE_KEY,
     };
   } catch {
-    console.error(
-      '\n  Local Supabase is not running.\n' +
+    console.warn(
+      '\n  Warning: Local Supabase is not running.\n' +
+      '  Supabase env vars will be empty (tests will fail, but show-report/install still work).\n' +
       '  Start it first:  supabase start\n',
     );
-    process.exit(1);
+    return {
+      NEXT_PUBLIC_SUPABASE_URL: '',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: '',
+      SUPABASE_SERVICE_ROLE_KEY: '',
+    };
   }
 }
+
+const E2E_PORT = Number(process.env.E2E_PORT) || 3100;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -28,14 +35,15 @@ export default defineConfig({
   timeout: 30_000,
   retries: 1,
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: `http://localhost:${E2E_PORT}`,
   },
   webServer: {
-    command: 'bunx next dev --port 3001',
-    port: 3001,
-    reuseExistingServer: false,
+    command: `bunx next dev --port ${E2E_PORT}`,
+    port: E2E_PORT,
+    reuseExistingServer: true,
     env: {
       ...getLocalSupabaseEnv(),
+      NEXT_DIST_DIR: '.next-e2e',
       // Explicitly unset so bug-reporter "not configured" test works
       GITHUB_TOKEN: '',
       GITHUB_REPO: '',

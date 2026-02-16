@@ -1,3 +1,9 @@
+---
+commit: ffd66a7
+date: 2026-02-15
+topic: bug-reporter
+---
+
 # Bug Reporter
 
 In-app bug reporting that auto-creates GitHub issues with rich context.

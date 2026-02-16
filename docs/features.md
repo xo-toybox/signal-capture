@@ -1,3 +1,12 @@
+---
+commit: ffd66a7
+date: 2026-02-15
+topic: features
+living: true
+---
+
+<!-- regenerate: Discover all user-facing features. Strategy: enumerate app routes (pages and API), then trace the components and interactions each route exposes. Also check for features outside the app routes (e.g. manifests, extensions, workers, CLIs). For each feature, describe key behaviors from the user's perspective. Include screenshots from docs/screenshots/ where they exist. Update YAML frontmatter commit/date. -->
+
 # Features
 
 Personal signal capture and intelligence pipeline. Grab URLs, thoughts, and voice notes — enrich them with AI-extracted claims, novelty assessments, and domain tags. Single-tenant, dark-only.

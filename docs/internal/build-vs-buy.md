@@ -1,3 +1,9 @@
+---
+commit: b3a57bf
+date: 2026-02-15
+topic: build-vs-buy
+---
+
 # Build vs. Buy: Signal Capture
 
 Why build a custom signal-capture tool instead of using Notion, Obsidian, Raindrop, or any of the dozens of capture/PKM products available?
