@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help dev dev-mobile dev-docker setup test test-e2e typecheck lint check build clean nuke db-push db-pull db-reset _ensure-docker _ensure-supabase _ensure-unlinked
+.PHONY: help dev dev-mobile dev-docker setup test test-e2e typecheck lint check build clean nuke db-push db-reset _ensure-docker _ensure-supabase _ensure-unlinked
 
 # --- Help ---
 
@@ -59,14 +59,6 @@ setup: ## First-time project setup
 db-push: ## Show instructions for applying schema
 	@echo "Paste supabase/schema.sql into the Supabase SQL Editor:"
 	@echo "https://supabase.com/dashboard/project/$${SUPABASE_PROJECT_REF:-<your-project-ref>}/sql"
-
-db-pull: _ensure-supabase _ensure-unlinked ## Pull production data into local Supabase
-	@if [ -z "$${SUPABASE_PROJECT_REF}" ]; then echo "SUPABASE_PROJECT_REF not set" >&2; exit 1; fi
-	supabase db dump --data-only --db-url "postgresql://postgres:postgres@db.$${SUPABASE_PROJECT_REF}.supabase.co:5432/postgres" -f /tmp/claude/prod-data.sql
-	supabase db reset --local
-	psql "$$(supabase status -o json | jq -r .DB_URL)" < /tmp/claude/prod-data.sql
-	rm -f /tmp/claude/prod-data.sql
-	@echo "Done. Local database now has production data."
 
 db-reset: _ensure-supabase _ensure-unlinked ## Reset local database with seed data
 	echo y | supabase db reset --local && \

@@ -11,12 +11,12 @@ interface Props {
 
 export default function StarButton({ signalId, isStarred, onChange }: Props) {
   const [starred, setStarred] = useState(isStarred);
+  const [busy, setBusy] = useState(false);
 
   // Sync with prop changes (e.g. from realtime updates)
   useEffect(() => {
     setStarred(isStarred);
   }, [isStarred]);
-  const [busy, setBusy] = useState(false);
 
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();

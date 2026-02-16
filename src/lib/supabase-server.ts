@@ -62,7 +62,7 @@ export function createServiceClient() {
   if (process.env.NODE_ENV !== 'production' && url && !isLocalUrl(url)) {
     throw new Error(
       'Refusing to create service client against remote Supabase in development. ' +
-      'Use `make dev-docker` for local Supabase or `make db-pull` to seed local data.'
+      'Use `make dev-docker` for local Supabase.'
     );
   }
   return createSupabaseClient(url!, serviceKey!);

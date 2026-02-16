@@ -17,6 +17,13 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'all', label: 'All' },
 ];
 
+const EMPTY_MESSAGES: Record<FilterTab, string> = {
+  active: 'no signals yet',
+  starred: 'no starred signals',
+  archived: 'no archived signals',
+  all: 'no signals yet',
+};
+
 const NULL_ENRICHMENT: Partial<SignalFeedItem> = {
   fetched_title: null,
   is_starred: false,
@@ -182,10 +189,6 @@ export default function SignalFeed({ initialSignals }: Props) {
     return () => document.removeEventListener('pointerdown', handler);
   }, [openCardId]);
 
-  const handleOpenChange = useCallback((id: string | null) => {
-    setOpenCardId(id);
-  }, []);
-
   const loadMore = async () => {
     const newOffset = offset + PAGE_SIZE;
     setOffset(newOffset);
@@ -203,7 +206,7 @@ export default function SignalFeed({ initialSignals }: Props) {
       key={signal.id}
       signal={signal}
       isOpen={openCardId === signal.id}
-      onOpenChange={handleOpenChange}
+      onOpenChange={setOpenCardId}
     />
   );
 
@@ -232,10 +235,7 @@ export default function SignalFeed({ initialSignals }: Props) {
         </div>
       ) : signals.length === 0 ? (
         <div className="py-12 text-center text-xs text-[#525252] font-mono">
-          {filter === 'active' ? 'no signals yet' :
-           filter === 'starred' ? 'no starred signals' :
-           filter === 'archived' ? 'no archived signals' :
-           'no signals yet'}
+          {EMPTY_MESSAGES[filter]}
         </div>
       ) : (
         <>

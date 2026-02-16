@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const DEADZONE = 10;
-const EDGE_MARGIN = 20;
-const REVEAL_THRESHOLD = 80;
-const DAMPING = 0.2;
-const PANEL_WIDTH = 80;
+export const DEADZONE = 10;
+export const EDGE_MARGIN = 20;
+export const REVEAL_THRESHOLD = 80;
+export const DAMPING = 0.2;
+export const PANEL_WIDTH = 80;
 
 export type RevealedSide = 'left' | 'right' | null;
 
@@ -165,20 +165,10 @@ export function useSwipe({
 
       // Full swipe — auto-commit
       if (absDx >= commitThreshold) {
-        if (dx < 0 && onCommitLeft) {
-          // Swipe left → archive
-          onCommitLeft();
-          setOffsetX(0);
-          setRevealedSide(null);
-        } else if (dx > 0 && onCommitRight) {
-          // Swipe right → star
-          onCommitRight();
-          setOffsetX(0);
-          setRevealedSide(null);
-        } else {
-          setOffsetX(0);
-          setRevealedSide(null);
-        }
+        if (dx < 0) onCommitLeft?.();
+        else onCommitRight?.();
+        setOffsetX(0);
+        setRevealedSide(null);
         onRevealChange?.(null);
         return;
       }
@@ -230,5 +220,3 @@ export function useSwipe({
     isAnimating,
   };
 }
-
-export { DEADZONE, EDGE_MARGIN, REVEAL_THRESHOLD, PANEL_WIDTH, DAMPING };

@@ -11,12 +11,12 @@ interface Props {
 
 export default function ArchiveButton({ signalId, isArchived, onChange }: Props) {
   const [archived, setArchived] = useState(isArchived);
+  const [busy, setBusy] = useState(false);
 
   // Sync with prop changes (e.g. from realtime updates)
   useEffect(() => {
     setArchived(isArchived);
   }, [isArchived]);
-  const [busy, setBusy] = useState(false);
 
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();
