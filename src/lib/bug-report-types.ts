@@ -6,6 +6,7 @@ export interface BugReportPayload {
   description: string;
   severity: Severity;
   kind: ReportKind;
+  assignClaude: boolean;
   url: string;
   userAgent: string;
   viewport: string;

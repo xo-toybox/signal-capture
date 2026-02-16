@@ -22,6 +22,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [severity, setSeverity] = useState<Severity>('medium');
+  const [assignClaude, setAssignClaude] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const titleRef = useRef<HTMLInputElement>(null);
@@ -34,6 +35,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
       setTitle('');
       setDescription('');
       setSeverity('medium');
+      setAssignClaude(true);
       setSubmitting(false);
       setError('');
       setTimeout(() => titleRef.current?.focus(), 50);
@@ -78,6 +80,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
           description: description.trim(),
           kind,
           severity,
+          assignClaude,
           url: location.href,
           userAgent: navigator.userAgent,
           viewport: `${window.innerWidth}x${window.innerHeight}`,
@@ -98,7 +101,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     } finally {
       setSubmitting(false);
     }
-  }, [title, submitting, description, kind, severity, onSuccess]);
+  }, [title, submitting, description, kind, severity, assignClaude, onSuccess]);
 
   // Escape to close, Cmd+Enter to submit
   useEffect(() => {
@@ -161,7 +164,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
                 <button
                   key={k.key}
                   type="button"
-                  onClick={() => setKind(k.key)}
+                  onClick={() => { setKind(k.key); setAssignClaude(k.key === 'bug'); }}
                   className={`font-mono text-sm tracking-[0.08em] transition-all duration-400 ${
                     kind !== k.key ? 'hover:opacity-60' : ''
                   }`}
@@ -228,34 +231,60 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
         {/* Footer — no border, breathing room */}
         <div className="flex-shrink-0 px-8 py-5">
           <div className="flex items-center gap-4">
-            {/* Severity — colored marks, not words */}
-            {kind === 'bug' ? (
-              <div className="flex items-center gap-2.5">
-                {SEVERITIES.map((s) => {
-                  const selected = severity === s;
-                  const colors = SEVERITY_COLORS[s];
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setSeverity(s)}
-                      aria-label={`Severity: ${s}`}
-                      className="flex items-center justify-center w-7 h-7 transition-all duration-400"
-                    >
-                      <span
-                        className="block rounded-full transition-all duration-400"
-                        style={{
-                          width: selected ? 8 : 6,
-                          height: selected ? 8 : 6,
-                          background: selected ? colors.dot : 'rgba(255,255,255,0.12)',
-                          boxShadow: selected ? `0 0 10px ${colors.dot}70, 0 0 4px ${colors.dot}40` : 'none',
-                        }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            ) : <div />}
+            <div className="flex items-center gap-3">
+              {/* Severity — colored marks, bugs only */}
+              {kind === 'bug' && (
+                <div className="flex items-center gap-2.5">
+                  {SEVERITIES.map((s) => {
+                    const selected = severity === s;
+                    const colors = SEVERITY_COLORS[s];
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSeverity(s)}
+                        aria-label={`Severity: ${s}`}
+                        className="flex items-center justify-center w-7 h-7 transition-all duration-400"
+                      >
+                        <span
+                          className="block rounded-full transition-all duration-400"
+                          style={{
+                            width: selected ? 8 : 6,
+                            height: selected ? 8 : 6,
+                            background: selected ? colors.dot : 'rgba(255,255,255,0.12)',
+                            boxShadow: selected ? `0 0 10px ${colors.dot}70, 0 0 4px ${colors.dot}40` : 'none',
+                          }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Claude auto-assign toggle */}
+              <button
+                type="button"
+                onClick={() => setAssignClaude(prev => !prev)}
+                aria-label={assignClaude ? 'Claude will work on this — click to disable' : 'Click to assign to Claude'}
+                className="flex items-center gap-1.5 py-1 transition-all duration-400"
+              >
+                <span
+                  className="block w-[5px] h-[5px] rounded-full transition-all duration-400"
+                  style={{
+                    background: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.12)',
+                    boxShadow: assignClaude ? '0 0 8px rgba(212,165,116,0.6), 0 0 3px rgba(212,165,116,0.3)' : 'none',
+                  }}
+                />
+                <span
+                  className="font-mono text-[11px] tracking-[0.06em] transition-all duration-400"
+                  style={{
+                    color: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.15)',
+                    textShadow: assignClaude ? '0 0 16px rgba(212,165,116,0.25)' : 'none',
+                  }}
+                >
+                  claude
+                </span>
+              </button>
+            </div>
             <div className="flex-1" />
             <button
               type="button"

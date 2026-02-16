@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
   const url = typeof body.url === 'string' ? body.url.slice(0, 2048) : '';
   const userAgent = typeof body.userAgent === 'string' ? body.userAgent.slice(0, 512) : '';
   const viewport = typeof body.viewport === 'string' ? body.viewport.slice(0, 128) : '';
+  const assignClaude = body.assignClaude === true;
   const consoleErrors: string[] = Array.isArray(body.consoleErrors)
     ? body.consoleErrors.filter((e: unknown) => typeof e === 'string').slice(0, 10)
     : [];
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         title: kind === 'feature' ? `[Feature] ${title}` : `[Bug] ${title}`,
         body: issueBody,
-        labels: [kind === 'feature' ? 'enhancement' : 'bug'],
+        labels: [kind === 'feature' ? 'enhancement' : 'bug', ...(assignClaude ? ['claude'] : [])],
       }),
     });
 

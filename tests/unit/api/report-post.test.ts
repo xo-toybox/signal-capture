@@ -227,6 +227,31 @@ describe('POST /api/report', () => {
     expect(body.body).not.toContain('Console Errors');
   });
 
+  // --- Claude label ---
+
+  it('adds claude label when assignClaude is true', async () => {
+    await POST(makeRequest({ title: 'bug', assignClaude: true }));
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.labels).toEqual(['bug', 'claude']);
+  });
+
+  it('adds claude label to feature when assignClaude is true', async () => {
+    await POST(makeRequest({ title: 'feature idea', kind: 'feature', assignClaude: true }));
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.labels).toEqual(['enhancement', 'claude']);
+  });
+
+  it('omits claude label when assignClaude is false or missing', async () => {
+    await POST(makeRequest({ title: 'bug', assignClaude: false }));
+    let body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.labels).toEqual(['bug']);
+
+    mockFetch.mockClear();
+    await POST(makeRequest({ title: 'bug' }));
+    body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.labels).toEqual(['bug']);
+  });
+
   // --- GitHub API failure ---
 
   it('returns 502 when GitHub API returns error', async () => {
