@@ -13,7 +13,7 @@ vi.mock('@supabase/ssr', () => ({
   })),
 }));
 
-const { proxy } = await import('@/proxy');
+const { proxy } = await import('../proxy');
 
 function makeRequest(path: string, base = 'http://localhost:3000') {
   return new NextRequest(new URL(path, base));
