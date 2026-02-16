@@ -24,7 +24,7 @@ Signal Capture is an **open pipeline node** -- it captures and stages signals, t
 ```
 [Capture surfaces]          [Signal Capture / Supabase]          [Downstream]
 
-  Web app      --+                                    +---> Claude chat (ad-hoc analysis)
+  Web app      --+                                    +---> chat (ad-hoc analysis)
   PWA share    --+          +----------------+        |
   Extension    --+------>   |  signals_raw   |  ------+---> OpenClaw (monitoring)
   Voice        --+          |  (Supabase)    |        |
@@ -53,12 +53,12 @@ Signal Capture is an **open pipeline node** -- it captures and stages signals, t
 | Product | Capture friction | Prioritize | Return & note | Batch extract | Automation flexibility |
 |---------|-----------------|------------|---------------|---------------|----------------------|
 | **Notion** | Medium (clipper + manual) | Priority property, drag | Full page editor | API exists -- best in class for structured query | Moderate -- API is good but you're on their platform |
-| **Obsidian** | High (open app, new note) | Manual frontmatter | Full markdown editor | Local files -- script anything | High -- you own the files |
+| **Obsidian** | High (open app, new note) | Manual frontmatter | Full markdown editor | Local files -- script anything | High -- local files + MCP server for programmatic access |
 | **Tana** | Medium (Tana Capture app) | Tags + views | Full outliner | New local API + MCP | Promising -- MCP is new |
 | **Roam Research** | Medium | Manual | Outliner | JSON export, API | Moderate |
 | **Logseq** | Medium | Manual | Outliner | Local files (Obsidian-like) | High -- open source, local |
 
-**Gap**: Can do the full workflow but with friction in capture (no "URL + why it matters" two-field model, no PWA share, no batch tab capture). Notion is the strongest here, but you're locked to a platform. Obsidian gives ownership but you're scripting over markdown files.
+**Gap**: Can do the full workflow but with friction in capture (no "URL + why it matters" two-field model, no PWA share, no batch tab capture). Notion is the strongest here, but you're locked to a platform. Obsidian gives ownership and now has MCP for programmatic access, but its data model is still markdown files -- every downstream consumer needs a parser, and there's no structured schema separating raw capture from enrichment from human annotation.
 
 ### Tier 3: AI-Enhanced Capture (capture + auto-enrich)
 
@@ -132,9 +132,9 @@ The schema is designed so you can swap enrichment strategies without touching th
 
 1. **Capture friction**: Open app, new note, type, add frontmatter for metadata. No web capture with context. Plugins help but add complexity.
 
-2. **Extraction gap**: Local markdown files are great for ownership, but "pull all pending signals with their context" means scripting over markdown files with frontmatter parsing. Fragile -- depends on consistent formatting.
+2. **Extraction gap**: Obsidian now has an MCP server, which significantly improves programmatic access compared to raw file scripting. But the underlying data model is still markdown files with frontmatter -- there's no structured schema, no separation between raw capture and enrichment and human annotation. "Pull all pending signals" means querying notes by frontmatter tags, which works but conflates all data layers into one document.
 
-3. **No realtime**: Local-first means no realtime subscriptions, no API endpoint another system can poll.
+3. **No realtime**: Local-first means no realtime subscriptions, no API endpoint another system can poll. MCP helps with on-demand access but doesn't solve push-based workflows.
 
 ## Comparison Summary
 
@@ -167,7 +167,7 @@ The 4-table schema is designed for this:
 - Swap enrichment models: rewrite `signals_enriched`, leave `signals_raw` and `signals_human` untouched
 - Add a new downstream consumer that doesn't exist yet: it just connects to Supabase
 
-No product in the landscape gives you this. Obsidian comes closest (local files you can script over) and Airtable (structured API), but Obsidian's data model is markdown files requiring parsers for every consumer, and Airtable's API is rate-limited and platform-locked.
+No product in the landscape gives you this. Obsidian comes closest (local files + MCP for programmatic access) and Airtable (structured API), but Obsidian's data model is still markdown files -- MCP gives you better access to them, but every downstream consumer still needs to parse frontmatter and markdown rather than query structured columns. Airtable's API is rate-limited and platform-locked.
 
 ## What's NOT Worth Building
 
