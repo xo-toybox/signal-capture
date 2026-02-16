@@ -24,16 +24,14 @@ Personal signal-capture and enrichment tool. Single-tenant, dark-only UI.
 - Validate inputs: URL protocol whitelist (`http:`/`https:`), length limits
 - Return 400 for validation errors, 401 for auth, 201 for creation
 
+## Workflows
+
+Standard dev, test, and build commands are `make` targets — run `make help` to list them. Run `make check` before considering work complete.
+
 ## Testing
 
-- **Unit:** Vitest — `bun run test` — files in `tests/unit/`
-- **E2E:** Playwright — `bun run test:e2e` — files in `tests/e2e/`
 - Mock setup in `tests/unit/setup.ts` and `tests/unit/mocks/supabase.ts`
 - API tests use `makeRequest()` factory + `mockAuth()`/`mockQueryResult()` helpers
-
-## Quality Gate
-
-Run `make check` before considering work complete (lint + typecheck + test + build).
 
 ## Styling
 

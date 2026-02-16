@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { safeArray, type SignalFeedItem } from '@/lib/types';
 import { STATUS_BG_COLORS } from '@/lib/constants';
 import InlineDeleteButton from './InlineDeleteButton';
@@ -13,14 +12,14 @@ function relativeTime(dateStr: string): string {
   const diff = now - then;
 
   const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return 'just now';
+  if (seconds < 60) return 'now';
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'yesterday';
-  if (days < 7) return `${days}d ago`;
+  if (days === 1) return '1d';
+  if (days < 7) return `${days}d`;
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -31,10 +30,7 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
   const claimCount = safeArray(signal.key_claims).length;
 
   return (
-    <Link
-      href={`/signal/${signal.id}`}
-      className="group flex border-b border-white/5 hover:bg-white/[0.02] transition-colors duration-150"
-    >
+    <div className="flex">
       <div
         className={`w-0.5 flex-shrink-0 ${STATUS_BG_COLORS[signal.processing_status]}`}
       />
@@ -73,14 +69,15 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
         )}
       </div>
 
-      <div className="flex-shrink-0 flex items-center gap-1 px-3 py-2.5 self-start">
+      {/* Actions — always visible, hover-to-reveal off-state on desktop */}
+      <div className="flex-shrink-0 flex items-center gap-0.5 px-2 py-2.5 self-start">
         <StarButton signalId={signal.id} isStarred={signal.is_starred} />
         <ArchiveButton signalId={signal.id} isArchived={signal.is_archived} />
-        <span className="text-xs text-[#525252] font-mono">
+        <span className="text-xs text-[#525252] font-mono pl-1">
           {relativeTime(signal.created_at)}
         </span>
         <InlineDeleteButton signalId={signal.id} />
       </div>
-    </Link>
+    </div>
   );
 }

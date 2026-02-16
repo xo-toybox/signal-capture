@@ -93,6 +93,9 @@ export function getSupabaseServerMock() {
     createServiceClient: vi.fn().mockImplementation(() => ({
       from: createFrom('service'),
     })),
+    createQueryClient: vi.fn().mockImplementation(() => {
+      return Promise.resolve({ from: createFrom('server') });
+    }),
     getUser: vi.fn().mockImplementation(() => Promise.resolve(currentUser)),
     isConfigured: true,
   };

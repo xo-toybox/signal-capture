@@ -1,4 +1,4 @@
-import { createServerClient, isConfigured } from '@/lib/supabase-server';
+import { createQueryClient, getUser, isConfigured } from '@/lib/supabase-server';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -32,10 +32,10 @@ export default async function SignalDetail({
 
   let signal;
   if (isConfigured) {
-    const supabase = await createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getUser();
     if (!user) redirect('/login');
 
+    const supabase = await createQueryClient();
     const { data } = await supabase
       .from('signals_feed')
       .select('*')

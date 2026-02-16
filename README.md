@@ -97,6 +97,7 @@ src/
     EditableCaptureContext.tsx # Inline editable capture_context field
     StarButton.tsx        # Star/unstar toggle
     ArchiveButton.tsx     # Archive/unarchive toggle
+    SwipeableCard.tsx     # Swipe gesture handler for star/archive actions
   lib/
     supabase.ts           # Browser client (realtime)
     supabase-server.ts    # Server client (cookies) + service client (RLS bypass)
@@ -106,6 +107,9 @@ src/
     bug-report-types.ts   # BugReportPayload, BugReportError types
     fetch-title.ts        # Server-side page title fetcher
     console-error-buffer.ts # Captures recent console errors for bug reports
+    signal-actions.ts     # API helpers for star/archive toggles
+    use-swipe.ts          # Swipe gesture hook with panel reveal
+    use-voice-insert.ts   # Voice input with cursor-aware insertion
   proxy.ts                # Auth middleware (Next.js 16 proxy)
 supabase/schema.sql       # Full database schema
 ```
@@ -123,7 +127,11 @@ Claude Code GitHub Action (`.github/workflows/claude.yml`) enables delegated dev
 
 ## Development
 
-Use `make dev` (mock data, no database) or `make dev-docker` (local Supabase via Docker). Do **not** run `bun run dev` directly.
+Use `make dev` (mock data, no database) or `make dev-docker` (local Supabase via Docker).
+
+`make db-reset` resets the local Supabase database and applies seed data from `.dev-docker/seed-local.sql`. Requires Docker. Guarded against running on a linked remote project. `dev-docker` runs this automatically before starting the dev server.
+
+`make db-pull` dumps production data (read-only) and loads it into the local database — useful for debugging with real data.
 
 See `Makefile` for all workflows (`make help` to list). Env vars in `.env.example`, database schema in `supabase/schema.sql`.
 

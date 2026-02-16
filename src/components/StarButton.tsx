@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toggleStar } from '@/lib/signal-actions';
 
 interface Props {
   signalId: string;
@@ -10,6 +11,11 @@ interface Props {
 
 export default function StarButton({ signalId, isStarred, onChange }: Props) {
   const [starred, setStarred] = useState(isStarred);
+
+  // Sync with prop changes (e.g. from realtime updates)
+  useEffect(() => {
+    setStarred(isStarred);
+  }, [isStarred]);
   const [busy, setBusy] = useState(false);
 
   const toggle = async (e: React.MouseEvent) => {
@@ -23,12 +29,7 @@ export default function StarButton({ signalId, isStarred, onChange }: Props) {
     onChange?.(next);
 
     try {
-      const res = await fetch(`/api/signals?id=${encodeURIComponent(signalId)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_starred: next }),
-      });
-      if (!res.ok) throw new Error();
+      await toggleStar(signalId, starred);
     } catch {
       setStarred(!next);
       onChange?.(!next);
@@ -43,7 +44,7 @@ export default function StarButton({ signalId, isStarred, onChange }: Props) {
       className={`px-1 text-sm transition-all duration-150 ${
         starred
           ? 'text-[#eab308] opacity-100'
-          : 'text-[#525252] opacity-0 group-hover:opacity-100 hover:text-[#eab308]'
+          : 'text-[#525252] group-hover:text-[#737373] hover:text-[#eab308]'
       }`}
       aria-label={starred ? 'Unstar signal' : 'Star signal'}
     >

@@ -47,6 +47,14 @@ export async function getUser() {
   return user;
 }
 
+/** Client for queries — service client in dev (bypasses RLS), server client in production. */
+export async function createQueryClient() {
+  if (process.env.NODE_ENV !== 'production' && isConfigured) {
+    return createServiceClient();
+  }
+  return createServerClient();
+}
+
 export function createServiceClient() {
   if (!isConfigured) {
     throw new Error('Supabase not configured');

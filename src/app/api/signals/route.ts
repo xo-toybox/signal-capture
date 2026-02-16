@@ -1,5 +1,7 @@
-import { createServerClient, createServiceClient, getUser } from '@/lib/supabase-server';
+import { createQueryClient, createServiceClient, getUser, isConfigured } from '@/lib/supabase-server';
 import { NextRequest } from 'next/server';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(request: NextRequest) {
   const user = await getUser();
@@ -71,7 +73,13 @@ export async function DELETE(request: NextRequest) {
   }
 
   const id = request.nextUrl.searchParams.get('id');
-  if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+  if (!id) {
+    return Response.json({ error: 'valid id is required' }, { status: 400 });
+  }
+
+  if (!isConfigured) return Response.json({ deleted: id });
+
+  if (!UUID_RE.test(id)) {
     return Response.json({ error: 'valid id is required' }, { status: 400 });
   }
 
@@ -98,7 +106,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const id = request.nextUrl.searchParams.get('id');
-  if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+  if (!id) {
     return Response.json({ error: 'valid id is required' }, { status: 400 });
   }
 
@@ -132,6 +140,12 @@ export async function PATCH(request: NextRequest) {
     return Response.json({ error: 'No valid fields to update' }, { status: 400 });
   }
 
+  if (!isConfigured) return Response.json({ signal: { id, ...updates } });
+
+  if (!UUID_RE.test(id)) {
+    return Response.json({ error: 'valid id is required' }, { status: 400 });
+  }
+
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from('signals_raw')
@@ -154,7 +168,7 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = await createServerClient();
+  const supabase = await createQueryClient();
   const { searchParams } = request.nextUrl;
   const parsedLimit = parseInt(searchParams.get('limit') ?? '20');
   const limit = Math.min(Math.max(Number.isNaN(parsedLimit) ? 20 : parsedLimit, 1), 100);
@@ -170,7 +184,7 @@ export async function GET(request: NextRequest) {
   if (filter === 'active') {
     query = query.eq('is_archived', false);
   } else if (filter === 'starred') {
-    query = query.eq('is_starred', true);
+    query = query.eq('is_starred', true).eq('is_archived', false);
   } else if (filter === 'archived') {
     query = query.eq('is_archived', true);
   }

@@ -121,7 +121,7 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="bug-report-title"
+      aria-label={kind === 'bug' ? 'Bug Report' : 'Feature Request'}
       style={{
         animation: 'fadeIn 200ms ease-out forwards'
       }}
@@ -150,127 +150,84 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
         />
 
         {/* Scrollable content */}
-        <div className="px-8 py-6 space-y-6 overflow-y-auto flex-1">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div
-                className="relative"
-                style={{
-                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                }}
-              >
-                <span
-                  className="block w-2 h-2 rounded-full"
+        <div className="px-8 pt-7 pb-6 space-y-7 overflow-y-auto flex-1">
+          {/* Kind toggle + ESC — no container, just typography */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              {KINDS.map(k => (
+                <button
+                  key={k.key}
+                  type="button"
+                  onClick={() => setKind(k.key)}
+                  className={`font-mono text-sm tracking-[0.08em] transition-all duration-400 ${
+                    kind !== k.key ? 'hover:opacity-60' : ''
+                  }`}
                   style={{
-                    background: kind === 'bug' ? '#ef4444' : '#3b82f6',
-                    boxShadow: `0 0 12px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}`
+                    color: kind === k.key ? k.dot : 'rgba(255,255,255,0.15)',
+                    textShadow: kind === k.key ? `0 0 20px ${k.dot}40` : 'none',
                   }}
-                />
-              </div>
-              <h2
-                id="bug-report-title"
-                className="font-mono text-xs uppercase tracking-[0.2em] text-white/60 font-semibold"
-              >
-                {kind === 'bug' ? 'Bug Report' : 'Feature Request'}
-              </h2>
+                >
+                  {k.label}
+                </button>
+              ))}
             </div>
             <button
               onClick={onClose}
-              className="text-xs font-mono text-white/40 hover:text-white/60 transition-colors duration-200"
+              className="font-mono text-[10px] tracking-[0.2em] text-white/25 hover:text-white/50 transition-colors duration-200"
             >
               ESC
             </button>
           </div>
 
-          {/* Kind toggle */}
-          <div className="flex gap-2 p-1 bg-white/[0.02] border border-white/[0.06] rounded-xl backdrop-blur-sm">
-            {KINDS.map(k => (
-              <button
-                key={k.key}
-                type="button"
-                onClick={() => setKind(k.key)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-mono text-sm font-medium transition-all duration-300"
-                style={{
-                  background: kind === k.key ? `linear-gradient(135deg, ${k.dot}15, ${k.dot}08)` : 'transparent',
-                  color: kind === k.key ? k.dot : '#666',
-                  borderWidth: kind === k.key ? '1px' : '0px',
-                  borderColor: kind === k.key ? `${k.dot}30` : 'transparent',
-                  transform: kind === k.key ? 'scale(1.02)' : 'scale(1)',
-                }}
-              >
-                <span
-                  className="block w-1.5 h-1.5 rounded-full transition-all duration-300"
-                  style={{
-                    background: k.dot,
-                    opacity: kind === k.key ? 1 : 0.4,
-                    boxShadow: kind === k.key ? `0 0 8px ${k.dot}` : 'none',
-                  }}
-                />
-                {k.label}
-              </button>
-            ))}
-          </div>
+          {/* Title — bottom border only */}
+          <input
+            ref={titleRef}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={256}
+            className="w-full bg-transparent border-0 border-b border-white/[0.08] rounded-none px-0 py-3 font-mono text-base text-white/90 placeholder:text-white/25 outline-none transition-all duration-300"
+            placeholder="Title"
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444450' : '#3b82f650';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            }}
+          />
 
-          {/* Title */}
-          <div className="space-y-3">
-            <label className="block font-mono text-xs uppercase tracking-widest text-white/70 font-semibold">
-              Title
-            </label>
-            <input
-              ref={titleRef}
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={256}
-              className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3.5 font-mono text-base text-white/90 placeholder:text-white/30 outline-none transition-all duration-200"
-              placeholder={kind === 'bug' ? 'Brief description of the issue' : 'What would you like to see?'}
-              style={{
-                boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444440' : '#3b82f640';
-                e.currentTarget.style.boxShadow = `0 0 0 3px ${kind === 'bug' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'}`;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.boxShadow = '0 0 0 0 rgba(59, 130, 246, 0)';
-              }}
-            />
-          </div>
+          {/* Description — bottom border only, no label */}
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full bg-transparent border-0 border-b border-white/[0.08] rounded-none px-0 py-3 font-mono text-sm leading-relaxed text-white/90 placeholder:text-white/25 outline-none transition-all duration-300 resize-none"
+            placeholder="Description (optional)"
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444450' : '#3b82f650';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            }}
+          />
 
-          {/* Description */}
-          <div className="space-y-3">
-            <label className="block font-mono text-xs uppercase tracking-widest text-white/70 font-semibold">
-              Description <span className="text-white/30 font-normal">optional</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3.5 font-mono text-sm leading-relaxed text-white/90 placeholder:text-white/30 outline-none transition-all duration-200 resize-none"
-              placeholder={kind === 'bug' ? 'Steps to reproduce, expected vs actual behavior...' : 'Describe the feature and why it would be useful...'}
-              style={{
-                boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444440' : '#3b82f640';
-                e.currentTarget.style.boxShadow = `0 0 0 3px ${kind === 'bug' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'}`;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.boxShadow = '0 0 0 0 rgba(59, 130, 246, 0)';
-              }}
-            />
-          </div>
+          {/* Error */}
+          {error && (
+            <p
+              className="font-mono text-sm text-[#ef4444]"
+              style={{ animation: 'slideDown 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
+            >
+              {error}
+            </p>
+          )}
+        </div>
 
-          {/* Severity — bugs only */}
-          {kind === 'bug' && (
-            <div className="space-y-3">
-              <label className="block font-mono text-xs uppercase tracking-widest text-white/70 font-semibold">
-                Severity
-              </label>
-              <div className="grid grid-cols-4 gap-2 p-1 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+        {/* Footer — no border, breathing room */}
+        <div className="flex-shrink-0 px-8 py-5">
+          <div className="flex items-center gap-4">
+            {/* Severity — colored marks, not words */}
+            {kind === 'bug' ? (
+              <div className="flex items-center gap-2.5">
                 {SEVERITIES.map((s) => {
                   const selected = severity === s;
                   const colors = SEVERITY_COLORS[s];
@@ -279,52 +236,29 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
                       key={s}
                       type="button"
                       onClick={() => setSeverity(s)}
-                      className="flex flex-col items-center justify-center gap-2 py-3 rounded-lg font-mono text-xs capitalize transition-all duration-300"
-                      style={{
-                        background: selected ? `linear-gradient(135deg, ${colors.dot}20, ${colors.dot}10)` : 'transparent',
-                        color: selected ? colors.text : '#666',
-                        borderWidth: selected ? '1px' : '0px',
-                        borderColor: selected ? `${colors.dot}30` : 'transparent',
-                        transform: selected ? 'scale(1.05)' : 'scale(1)',
-                      }}
+                      aria-label={`Severity: ${s}`}
+                      className="flex items-center justify-center w-7 h-7 transition-all duration-400"
                     >
                       <span
-                        className="block w-2 h-2 rounded-full transition-all duration-300"
+                        className="block rounded-full transition-all duration-400"
                         style={{
-                          background: colors.dot,
-                          opacity: selected ? 1 : 0.4,
-                          boxShadow: selected ? `0 0 10px ${colors.dot}` : 'none',
+                          width: selected ? 8 : 6,
+                          height: selected ? 8 : 6,
+                          background: selected ? colors.dot : 'rgba(255,255,255,0.12)',
+                          boxShadow: selected ? `0 0 10px ${colors.dot}70, 0 0 4px ${colors.dot}40` : 'none',
                         }}
                       />
-                      <span className="font-medium">{s}</span>
                     </button>
                   );
                 })}
               </div>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div
-              className="border border-[#ef4444]/20 rounded-xl bg-[#ef4444]/5 px-4 py-3 backdrop-blur-sm"
-              style={{
-                animation: 'slideDown 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards'
-              }}
-            >
-              <p className="font-mono text-sm text-[#ef4444]">{error}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Actions - Sticky footer */}
-        <div className="flex-shrink-0 px-8 py-5 border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-md">
-          <div className="flex gap-3 justify-end">
+            ) : <div />}
+            <div className="flex-1" />
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-6 py-2.5 rounded-xl border border-white/10 bg-white/[0.02] font-mono text-sm text-white/60 transition-all duration-200 hover:bg-white/[0.04] hover:text-white/80 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="font-mono text-sm text-white/30 hover:text-white/60 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -332,22 +266,12 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
               type="button"
               onClick={handleSubmit}
               disabled={!title.trim() || submitting}
-              className="px-6 py-2.5 rounded-xl font-mono text-sm font-medium text-white transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed relative overflow-hidden"
+              className="px-5 py-2 rounded-lg font-mono text-sm font-medium text-white transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
               style={{
                 background: kind === 'bug'
                   ? 'linear-gradient(135deg, #ef4444, #dc2626)'
                   : 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                boxShadow: submitting ? 'none' : `0 4px 20px -4px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}80`,
-              }}
-              onMouseEnter={(e) => {
-                if (!submitting && title.trim()) {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = `0 6px 24px -4px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}aa`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = `0 4px 20px -4px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}80`;
+                boxShadow: submitting ? 'none' : `0 4px 16px -4px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}60`,
               }}
             >
               {submitting ? (
@@ -403,14 +327,6 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
           }
         }
 
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
       `}</style>
     </div>
   );

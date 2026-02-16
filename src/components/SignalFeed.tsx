@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient, isConfigured } from '@/lib/supabase';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
-import SignalCard from './SignalCard';
+import SwipeableCard from './SwipeableCard';
 import type { SignalFeedItem } from '@/lib/types';
 
 const PAGE_SIZE = 20;
@@ -139,7 +139,7 @@ export default function SignalFeed({ initialSignals }: Props) {
               .filter(s => {
                 // Remove items that no longer match current filter
                 if (filter === 'active' && s.is_archived) return false;
-                if (filter === 'starred' && !s.is_starred) return false;
+                if (filter === 'starred' && (!s.is_starred || s.is_archived)) return false;
                 if (filter === 'archived' && !s.is_archived) return false;
                 return true;
               });
@@ -154,7 +154,11 @@ export default function SignalFeed({ initialSignals }: Props) {
           setSignals(prev => prev.filter(s => s.id !== deletedId));
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Realtime subscription error:', status, err);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -162,6 +166,25 @@ export default function SignalFeed({ initialSignals }: Props) {
   }, [filter]);
 
   const [loadingMore, setLoadingMore] = useState(false);
+  const [openCardId, setOpenCardId] = useState<string | null>(null);
+  const feedRef = useRef<HTMLDivElement>(null);
+
+  // Dismiss open swipe panel on outside tap
+  useEffect(() => {
+    if (!openCardId) return;
+
+    const handler = (e: PointerEvent) => {
+      if (feedRef.current && !feedRef.current.contains(e.target as Node)) {
+        setOpenCardId(null);
+      }
+    };
+    document.addEventListener('pointerdown', handler);
+    return () => document.removeEventListener('pointerdown', handler);
+  }, [openCardId]);
+
+  const handleOpenChange = useCallback((id: string | null) => {
+    setOpenCardId(id);
+  }, []);
 
   const loadMore = async () => {
     const newOffset = offset + PAGE_SIZE;
@@ -175,8 +198,17 @@ export default function SignalFeed({ initialSignals }: Props) {
   const starred = filter === 'active' ? signals.filter(s => s.is_starred) : [];
   const unstarred = filter === 'active' ? signals.filter(s => !s.is_starred) : signals;
 
+  const renderCard = (signal: SignalFeedItem) => (
+    <SwipeableCard
+      key={signal.id}
+      signal={signal}
+      isOpen={openCardId === signal.id}
+      onOpenChange={handleOpenChange}
+    />
+  );
+
   return (
-    <div>
+    <div ref={feedRef}>
       {/* Filter tabs */}
       <div className="flex gap-1 mb-3 text-xs font-mono">
         {FILTER_TABS.map(tab => (
@@ -211,15 +243,11 @@ export default function SignalFeed({ initialSignals }: Props) {
             {/* Pinned starred section (active tab only) */}
             {starred.length > 0 && (
               <>
-                {starred.map((signal) => (
-                  <SignalCard key={signal.id} signal={signal} />
-                ))}
+                {starred.map(renderCard)}
                 <div className="h-px bg-[#eab308]/20" />
               </>
             )}
-            {unstarred.map((signal) => (
-              <SignalCard key={signal.id} signal={signal} />
-            ))}
+            {unstarred.map(renderCard)}
           </div>
 
           {hasMore && (

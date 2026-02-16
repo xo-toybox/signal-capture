@@ -40,11 +40,18 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!user && process.env.NODE_ENV === 'production') {
+    // API routes get JSON 401; page navigations redirect to login
+    if (pathname.startsWith('/api/')) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   const allowedEmail = process.env.ALLOWED_EMAIL;
   if (allowedEmail && process.env.NODE_ENV === 'production' && user && user.email !== allowedEmail) {
+    if (pathname.startsWith('/api/')) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('error', 'access_denied');

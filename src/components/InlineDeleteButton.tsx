@@ -48,10 +48,10 @@ export default function InlineDeleteButton({ signalId }: { signalId: string }) {
   return (
     <button
       onClick={handleClick}
-      className={`px-2 py-0.5 text-sm font-mono transition-all duration-150 ${
+      className={`px-2 py-1 min-w-[28px] min-h-[28px] flex items-center justify-center transition-all duration-150 ${
         confirming
-          ? 'text-[#ef4444] opacity-100'
-          : 'text-[#525252] opacity-50 md:opacity-0 md:group-hover:opacity-100 hover:text-[#ef4444] hover:opacity-100'
+          ? 'text-[#ef4444] text-[10px] font-mono opacity-100'
+          : 'text-[#525252] text-base leading-none group-hover:text-[#737373] hover:text-[#ef4444]'
       }`}
     >
       {confirming ? 'delete?' : '×'}
