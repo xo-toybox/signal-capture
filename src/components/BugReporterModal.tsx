@@ -260,25 +260,37 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
                   })}
                 </div>
               )}
+              {/* Divider — only when severity dots are visible */}
+              {kind === 'bug' && (
+                <div className="w-px h-3 bg-white/[0.06]" />
+              )}
               {/* Claude auto-assign toggle */}
               <button
                 type="button"
                 onClick={() => setAssignClaude(prev => !prev)}
                 aria-label={assignClaude ? 'Claude will work on this — click to disable' : 'Click to assign to Claude'}
-                className="flex items-center gap-1.5 py-1 transition-all duration-400"
+                className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300"
+                style={{
+                  background: assignClaude ? 'rgba(212,165,116,0.07)' : 'transparent',
+                  border: `1px solid ${assignClaude ? 'rgba(212,165,116,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                  boxShadow: assignClaude
+                    ? '0 0 16px -4px rgba(212,165,116,0.15), inset 0 0 12px -4px rgba(212,165,116,0.05)'
+                    : 'none',
+                }}
               >
                 <span
-                  className="block w-[5px] h-[5px] rounded-full transition-all duration-400"
+                  className="text-[9px] leading-none transition-all duration-300"
                   style={{
-                    background: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.12)',
-                    boxShadow: assignClaude ? '0 0 8px rgba(212,165,116,0.6), 0 0 3px rgba(212,165,116,0.3)' : 'none',
+                    color: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.1)',
+                    filter: assignClaude ? 'drop-shadow(0 0 3px rgba(212,165,116,0.5))' : 'none',
                   }}
-                />
+                >
+                  ✦
+                </span>
                 <span
-                  className="font-mono text-[11px] tracking-[0.06em] transition-all duration-400"
+                  className="font-mono text-[10px] tracking-[0.08em] leading-none transition-all duration-300"
                   style={{
-                    color: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.15)',
-                    textShadow: assignClaude ? '0 0 16px rgba(212,165,116,0.25)' : 'none',
+                    color: assignClaude ? 'rgba(212,165,116,0.85)' : 'rgba(255,255,255,0.12)',
                   }}
                 >
                   claude
