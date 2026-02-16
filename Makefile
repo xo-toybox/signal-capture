@@ -68,7 +68,7 @@ db-reset: _ensure-supabase ## Reset local database
 	supabase db reset
 
 clean: ## Remove build artifacts
-	rm -rf .next
+	rm -rf .next .coverage .test-results .tsbuildinfo
 
 nuke: ## Remove build artifacts and node_modules
 	@echo "This will delete .next/ and node_modules/."

@@ -4,8 +4,8 @@
 /node_modules
 
 # testing
-/coverage
-/test-results/
+/.coverage
+/.test-results/
 /playwright-report/
 
 # next.js
@@ -35,5 +35,5 @@ supabase/.branches/
 .vercel
 
 # typescript
-*.tsbuildinfo
+.tsbuildinfo
 next-env.d.ts
