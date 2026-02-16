@@ -4,100 +4,28 @@ date: 2026-02-16
 topic: capture-workflows
 ---
 
-<!-- regenerate: Trace every path a signal can enter the system. To discover channels: find the signals creation API route, then grep the entire repo for all callers of that endpoint. For each channel, describe fields populated, input method, and user flow. Include the field reference table and post-capture pipeline. Update YAML frontmatter commit/date. -->
+<!-- regenerate: Trace every path a signal can enter the system. To discover channels: find the signals creation API route, then grep the entire repo for all callers of that endpoint. Omit channels that are disabled or non-functional. Structure as: what types of content the system accepts, then the available input methods, then what happens post-capture. Write for end users — one short description per channel explaining what to do, not how the system works internally. Only describe features that are actually wired and working. Update YAML frontmatter commit/date. -->
 
 # Capture Workflows
 
-How signals enter the system across each channel.
+Put anything in the content box — a URL, a thought, a half-formed idea — and hit capture. You can add a title and a note about why it's interesting, but neither is required.
 
-## Fields
+## What you can capture
 
-| Field | Required | Description |
-|---|---|---|
-| **Title** | No | Short headline for scanning. Auto-filled from share or page scrape; editable. |
-| **Content** | Yes | The signal itself: URL, thought, excerpt, or any text. |
-| **Why interesting?** | No | Your editorial context — what caught your eye, how it connects. |
+**Links** — paste or share a URL. The page title is fetched automatically if you don't provide one.
 
-**Display title priority:** Title > Fetched title (scraped) > Enrichment title (AI) > Truncated content
+**Thoughts** — no link needed. Type whatever's on your mind, optionally give it a title for easier scanning later.
 
----
+## Ways to capture
 
-## Channels
+**Type or paste** — the baseline, always available. Paste a URL or type a thought into the content field, optionally add a title and context, submit.
 
-### PWA Share (Chrome / mobile share sheet)
+**Dictate with voice** — tap the mic button on any text field and speak. Your words appear wherever the cursor is. Works on both the content box and the "why interesting?" field.
 
-User shares a link from another app to Signal Capture.
+**Share from another app** — on mobile or any PWA-enabled browser, share a link to Signal Capture. The title and URL are pre-filled; just add why it caught your eye and submit.
 
-| Field | Value |
-|---|---|
-| Title | Pre-filled from `shared_title` (editable) |
-| Content | The shared URL |
-| Why interesting? | Empty, auto-focused for quick annotation |
-| Source URL | Auto-set from `shared_url` |
-| Input method | `share` |
+**Chrome extension** (desktop only) — click the extension icon to batch-capture selected tabs, or right-click any page and choose "Capture this page" for a single one. Titles come from the page automatically.
 
-Flow: Share link > form opens with title + URL pre-filled > add context > submit.
+## After capture
 
-### Manual URL
-
-User pastes or types a URL directly.
-
-| Field | Value |
-|---|---|
-| Title | Empty (user can type; auto-scraped after submit) |
-| Content | The URL (or URL + surrounding text) |
-| Why interesting? | Optional |
-| Source URL | Auto-extracted from content |
-| Input method | `text` |
-
-Flow: Paste URL into content > optionally add title + context > submit > title auto-fetched from page.
-
-### Thought
-
-User captures an idea, observation, or note — no URL.
-
-| Field | Value |
-|---|---|
-| Title | Optional short label for feed scanning |
-| Content | The thought (free-form, any length up to 10k chars) |
-| Why interesting? | Optional — useful when the thought needs framing |
-| Source URL | None |
-| Input method | `text` |
-
-Flow: Type thought > optionally title it > submit.
-
-### Voice
-
-User dictates via microphone button (Web Speech API).
-
-| Field | Value |
-|---|---|
-| Title | Empty (user can type or dictate) |
-| Content | Transcribed speech |
-| Why interesting? | Can also be dictated (separate mic button) |
-| Source URL | Auto-extracted if transcript contains a URL |
-| Input method | `voice` |
-
-Flow: Tap mic > speak > transcript appears in content > edit/add title > submit.
-
-### Chrome Extension (batch)
-
-Extension captures all open tabs or selected tabs.
-
-| Field | Value |
-|---|---|
-| Title | Page title from `document.title` |
-| Content | Page URL |
-| Why interesting? | Not set (batch capture) |
-| Source URL | Tab URL |
-| Input method | `extension` |
-
-Flow: Click extension > select tabs > batch capture > titles auto-sent from tab metadata.
-
----
-
-## After Capture
-
-1. **Title fetch** — if source URL exists and no user-provided title, scrapes `<title>` / `og:title` from the page. Stored as `fetched_title` (never overwrites user-provided title).
-2. **Enrichment** — AI pipeline extracts claims, tags, novelty assessment. Generates `source_title` in enrichment layer.
-3. **Triage** — signal appears in feed. Star, archive, or click through to detail view.
+Your signal appears in the feed. From there you can star it, archive it, or tap through to the detail view. If you captured a link, the system automatically fills in a title.
