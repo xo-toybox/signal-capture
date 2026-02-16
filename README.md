@@ -94,6 +94,10 @@ A Chrome extension in `extension/` captures all open tabs in the current browser
 2. Load unpacked → select `extension/` directory
 3. Click the extension icon to capture all tabs
 
+## GitHub Automation
+
+Claude Code GitHub Action (`.github/workflows/claude.yml`) enables delegated development via issues and PR comments. Create an issue or comment `@claude` to trigger automated implementation — Claude reads the codebase, makes changes, writes tests, and runs `make check` before creating a PR. Scoped to focused tasks (25-turn, 30-minute limit) with safety constraints: can't modify workflows, access secrets, or skip quality gates.
+
 ## Development
 
 Use `make dev` (mock data, no database) or `make dev-docker` (local Supabase via Docker). Do **not** run `bun run dev` directly.
