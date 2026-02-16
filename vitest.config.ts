@@ -5,8 +5,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    setupFiles: ['./__tests__/setup.ts'],
-    exclude: ['e2e/**', 'node_modules/**'],
+    setupFiles: ['./tests/unit/setup.ts'],
+    exclude: ['tests/e2e/**', 'node_modules/**'],
     coverage: {
       reportsDirectory: '.coverage',
     },

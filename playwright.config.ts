@@ -23,7 +23,7 @@ function getLocalSupabaseEnv() {
 }
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './tests/e2e',
   outputDir: '.test-results',
   timeout: 30_000,
   retries: 1,
