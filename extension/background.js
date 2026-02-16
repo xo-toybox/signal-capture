@@ -1,8 +1,9 @@
 // Signal Capture — Chrome Extension background service worker
 importScripts('config.js');
 
-// Register context menu on install/update
-chrome.runtime.onInstalled.addListener(() => {
+// Register context menu on every service worker wake-up.
+// Using removeAll first avoids "duplicate id" errors on re-registration.
+chrome.contextMenus.removeAll(() => {
   chrome.contextMenus.create({
     id: 'capture-page',
     title: 'Capture this page',
