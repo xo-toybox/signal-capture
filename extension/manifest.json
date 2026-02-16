@@ -1,19 +1,29 @@
 {
   "manifest_version": 3,
   "name": "Signal Capture",
-  "version": "1.0.0",
-  "description": "Capture all open tabs as signals",
-  "permissions": ["tabs", "activeTab"],
+  "version": "1.1.0",
+  "description": "Capture browser tabs as signals",
+  "permissions": ["tabs", "activeTab", "contextMenus"],
   "host_permissions": [
     "http://localhost:3000/*",
     "https://signal-capture.vercel.app/*"
   ],
   "action": {
-    "default_title": "Capture All Tabs",
+    "default_title": "Signal Capture",
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
+    }
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Open Signal Capture popup"
     }
   },
   "background": {

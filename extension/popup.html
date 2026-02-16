@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Signal Capture</h1>
+    <button id="toggle-all" title="Select All">Select All</button>
+  </header>
+
+  <div id="tab-list"></div>
+
+  <div id="context-section">
+    <textarea id="context-input" placeholder="Add context (optional)..." rows="2"></textarea>
+  </div>
+
+  <footer>
+    <span id="status"></span>
+    <button id="capture-btn" disabled>Capture</button>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
