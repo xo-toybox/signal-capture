@@ -39,7 +39,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (!user) {
+  if (!user && process.env.NODE_ENV === 'production') {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

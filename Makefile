@@ -11,16 +11,16 @@ help: ## Show available commands
 # --- Dev ---
 
 dev: ## Start dev server with mock data (no database)
-	unset NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY && \
+	NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= SUPABASE_SERVICE_ROLE_KEY= \
 		bun run dev
 
 dev-docker: _ensure-supabase ## Start dev server with local Supabase (requires Docker)
-	unset NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY ALLOWED_EMAIL && \
-		eval $$(supabase status -o env \
+	eval "$$(supabase status -o env \
 			--override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
 			--override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
-			--override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY) && \
-		bun run dev
+			--override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+		| sed 's/^/export /')" && \
+		ALLOWED_EMAIL= bun run dev
 
 # --- Test ---
 

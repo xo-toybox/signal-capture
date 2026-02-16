@@ -43,7 +43,6 @@ export default function VoiceInput({ onTranscript, onStart }: VoiceInputProps) {
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 

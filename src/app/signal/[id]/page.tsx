@@ -28,7 +28,7 @@ export default async function SignalDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (!UUID_RE.test(id)) notFound();
+  if (isConfigured && !UUID_RE.test(id)) notFound();
 
   let signal;
   if (isConfigured) {
