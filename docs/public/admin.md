@@ -15,7 +15,7 @@ Things the app operator needs to know that aren't obvious from the UI.
 
 Floating button in the bottom-right corner. Opens a modal to file a bug or feature request directly to GitHub Issues via `/api/report`. Includes a severity picker for bugs and auto-captures environment context (URL, viewport, user agent, console errors).
 
-Requires `GITHUB_TOKEN` and `GITHUB_REPO` env vars to be set. If they're missing, the submit will fail with a 502.
+`Cmd+Enter` (`Ctrl+Enter` on Windows) submits from anywhere in the modal. Requires `GITHUB_TOKEN` and `GITHUB_REPO` env vars to be set. If they're missing, the submit will fail with a 502.
 
 ## Desktop PWA refresh
 
