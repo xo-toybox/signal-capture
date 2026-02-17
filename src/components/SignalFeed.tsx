@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient, isConfigured } from '@/lib/supabase';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
 import SwipeableCard from './SwipeableCard';
+import SelectionBar from './SelectionBar';
+import ExportPreviewModal from './ExportPreviewModal';
+import { signalsToMarkdown } from '@/lib/signals-to-markdown';
 import type { SignalFeedItem } from '@/lib/types';
 
 const PAGE_SIZE = 20;
@@ -54,6 +57,12 @@ export default function SignalFeed({ initialSignals }: Props) {
   const [offset, setOffset] = useState(0);
   const [filter, setFilter] = useState<FilterTab>('active');
 
+  // Selection state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewMarkdown, setPreviewMarkdown] = useState('');
+
   const fetchSignals = useCallback(async (currentOffset: number, currentFilter: FilterTab) => {
     if (!isConfigured) {
       setSignals(MOCK_SIGNALS);
@@ -92,6 +101,8 @@ export default function SignalFeed({ initialSignals }: Props) {
     setFilter(tab);
     setOffset(0);
     setLoading(true);
+    setSelectMode(false);
+    setSelectedIds([]);
     fetchSignals(0, tab);
   }, [fetchSignals]);
 
@@ -197,6 +208,116 @@ export default function SignalFeed({ initialSignals }: Props) {
     setLoadingMore(false);
   };
 
+  // Selection helpers
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  }, []);
+
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false);
+    setSelectedIds([]);
+  }, []);
+
+  // Time-range selection: select all signals within N days
+  const selectByDays = useCallback((days: number | null) => {
+    if (days === null) {
+      // "All" — toggle: select all if not all selected, else clear
+      const allIds = signals.map(s => s.id);
+      setSelectedIds(prev => prev.length === allIds.length ? [] : allIds);
+      return;
+    }
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const matching = signals.filter(s => new Date(s.created_at).getTime() >= cutoff);
+    const matchingIds = matching.map(s => s.id);
+    // Toggle: if all matching are already selected, deselect them
+    const allAlreadySelected = matchingIds.length > 0 && matchingIds.every(id => selectedIds.includes(id));
+    if (allAlreadySelected) {
+      setSelectedIds(prev => prev.filter(id => !matchingIds.includes(id)));
+    } else {
+      // Add matching IDs (preserve existing selections + order)
+      setSelectedIds(prev => {
+        const existing = new Set(prev);
+        const toAdd = matchingIds.filter(id => !existing.has(id));
+        return [...prev, ...toAdd];
+      });
+    }
+  }, [signals, selectedIds]);
+
+  const getSelectedSignals = useCallback((): SignalFeedItem[] => {
+    // Maintain tap-selection order
+    const signalMap = new Map(signals.map(s => [s.id, s]));
+    return selectedIds.map(id => signalMap.get(id)).filter((s): s is SignalFeedItem => !!s);
+  }, [signals, selectedIds]);
+
+  const openPreview = useCallback(() => {
+    const selected = getSelectedSignals();
+    if (selected.length === 0) return;
+    setPreviewMarkdown(signalsToMarkdown(selected));
+    setPreviewOpen(true);
+  }, [getSelectedSignals]);
+
+  const copyMarkdown = useCallback(async () => {
+    const selected = getSelectedSignals();
+    if (selected.length === 0) return;
+    const md = signalsToMarkdown(selected);
+    try {
+      await navigator.clipboard.writeText(md);
+    } catch {
+      // Fallback: open preview so user can manually copy
+      setPreviewMarkdown(md);
+      setPreviewOpen(true);
+    }
+  }, [getSelectedSignals]);
+
+  // Keyboard shortcuts for select mode
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Escape: close modal first, then exit select mode
+      if (e.key === 'Escape') {
+        if (previewOpen) {
+          // Modal handles its own Escape
+          return;
+        }
+        if (selectMode) {
+          e.preventDefault();
+          exitSelectMode();
+          return;
+        }
+      }
+
+      if (!selectMode) return;
+
+      // Cmd/Ctrl+A: select all visible signals
+      if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        const allIds = signals.map(s => s.id);
+        setSelectedIds(prev => prev.length === allIds.length ? [] : allIds);
+        return;
+      }
+
+      // Cmd/Ctrl+C: copy markdown directly
+      if (e.key === 'c' && (e.metaKey || e.ctrlKey) && selectedIds.length > 0) {
+        // Only intercept if no text is selected (don't break normal copy)
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) return;
+        e.preventDefault();
+        copyMarkdown();
+        return;
+      }
+
+      // Enter: open preview
+      if (e.key === 'Enter' && selectedIds.length > 0 && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        openPreview();
+      }
+    };
+
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectMode, previewOpen, signals, selectedIds, exitSelectMode, copyMarkdown, openPreview]);
+
   // In active view, partition into starred (pinned) and unstarred
   const starred = filter === 'active' ? signals.filter(s => s.is_starred) : [];
   const unstarred = filter === 'active' ? signals.filter(s => !s.is_starred) : signals;
@@ -207,27 +328,80 @@ export default function SignalFeed({ initialSignals }: Props) {
       signal={signal}
       isOpen={openCardId === signal.id}
       onOpenChange={setOpenCardId}
+      selectMode={selectMode}
+      isSelected={selectedIds.includes(signal.id)}
+      onToggleSelect={handleToggleSelect}
     />
   );
 
   return (
     <div ref={feedRef}>
-      {/* Filter tabs */}
-      <div className="flex gap-1 mb-3 text-xs font-mono">
-        {FILTER_TABS.map(tab => (
+      {/* Filter tabs + Select toggle */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex gap-1 text-xs font-mono">
+          {FILTER_TABS.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => changeFilter(tab.key)}
+              className={`px-3 py-1 rounded transition-colors duration-150 ${
+                filter === tab.key
+                  ? 'text-[#e5e5e5] bg-white/[0.06]'
+                  : 'text-[#525252] hover:text-[#737373]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {signals.length > 0 && (
           <button
-            key={tab.key}
-            onClick={() => changeFilter(tab.key)}
-            className={`px-3 py-1 rounded transition-colors duration-150 ${
-              filter === tab.key
-                ? 'text-[#e5e5e5] bg-white/[0.06]'
+            type="button"
+            onClick={() => selectMode ? exitSelectMode() : setSelectMode(true)}
+            className={`px-3 py-1 rounded font-mono text-xs transition-colors duration-150 ${
+              selectMode
+                ? 'text-[#3b82f6] bg-[#3b82f6]/10'
                 : 'text-[#525252] hover:text-[#737373]'
             }`}
           >
-            {tab.label}
+            {selectMode ? 'Done' : 'Select'}
           </button>
-        ))}
+        )}
       </div>
+
+      {/* Time-range selection chips (select mode only) */}
+      {selectMode && signals.length > 0 && (
+        <div className="flex gap-1.5 mb-3 text-[11px] font-mono">
+          {([
+            { label: 'Today', days: 1 },
+            { label: '7d', days: 7 },
+            { label: '30d', days: 30 },
+            { label: 'All', days: null },
+          ] as { label: string; days: number | null }[]).map(opt => {
+            // Determine if this range is "active" (all matching signals selected)
+            const cutoff = opt.days !== null ? Date.now() - opt.days * 24 * 60 * 60 * 1000 : 0;
+            const matchingIds = opt.days !== null
+              ? signals.filter(s => new Date(s.created_at).getTime() >= cutoff).map(s => s.id)
+              : signals.map(s => s.id);
+            const isActive = matchingIds.length > 0 && matchingIds.every(id => selectedIds.includes(id));
+
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => selectByDays(opt.days)}
+                className={`px-2.5 py-1 rounded-full border transition-all duration-150 ${
+                  isActive
+                    ? 'text-[#3b82f6] border-[#3b82f6]/30 bg-[#3b82f6]/10'
+                    : 'text-[#525252] border-white/[0.06] hover:text-[#737373] hover:border-white/10'
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {loading ? (
         <div className="py-8 text-center text-xs text-[#525252] font-mono">
@@ -261,8 +435,27 @@ export default function SignalFeed({ initialSignals }: Props) {
               </button>
             </div>
           )}
+
+          {/* Bottom padding when selection bar is visible */}
+          {selectMode && <div className="h-16" />}
         </>
       )}
+
+      {/* Selection bar */}
+      {selectMode && (
+        <SelectionBar
+          count={selectedIds.length}
+          onPreview={openPreview}
+          onCancel={exitSelectMode}
+        />
+      )}
+
+      {/* Export preview modal */}
+      <ExportPreviewModal
+        open={previewOpen}
+        markdown={previewMarkdown}
+        onClose={() => setPreviewOpen(false)}
+      />
     </div>
   );
 }
