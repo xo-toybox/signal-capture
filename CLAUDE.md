@@ -54,7 +54,10 @@ When adding a new page: place in the correct route group. If public, also add pa
 
 ## Styling
 
-- Tailwind v4, dark-only: `bg-[#0a0a0a]`, `text-[#e5e5e5]`
-- Borders: `border-white/5`
-- No arbitrary Tailwind values — use custom hex colors
-- **Design identity**: see [`docs/dev-workflows/IDENTITY_FRONTEND_DESIGN.md`](docs/dev-workflows/IDENTITY_FRONTEND_DESIGN.md) for UI/UX principles, visual character, and interaction guidelines
+- Tailwind v4, dark-only
+- Design identity: [`docs/dev-workflows/IDENTITY_FRONTEND_DESIGN.md`](docs/dev-workflows/IDENTITY_FRONTEND_DESIGN.md)
+- No arbitrary Tailwind values — use custom hex colors or CSS vars from `globals.css`
+
+## Documentation
+
+When creating or updating docs, follow [`docs/dev-workflows/DOCUMENTATION_GUIDE.md`](docs/dev-workflows/DOCUMENTATION_GUIDE.md).

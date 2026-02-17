@@ -1,6 +1,6 @@
 ---
-commit: ffd66a7
-date: 2026-02-15
+commit: 0110585
+date: 2026-02-17
 topic: features
 living: true
 ---
@@ -21,6 +21,7 @@ The home view: capture form at top, filterable signal list below.
 - **Pagination** — loads 20 at a time with "load more"
 - **Status indicators** — colored left border per signal: yellow (pending), blue (processing), green (complete), red (dismissed/failed)
 - **Enrichment preview** — enriched signals show claim count and up to 3 domain tags inline
+- **Auto-archive** — signals older than 30 days automatically leave the Active view
 
 ![Feed — desktop](screenshots/01-feed-desktop.png)
 
@@ -63,6 +64,15 @@ Star and archive signals to organize your feed.
 - **Two-click delete** — confirmation step prevents accidental deletion
 - **Bulk via extension** — capture and triage multiple tabs at once
 
+## Multi-Select & Export
+
+Select multiple signals and export them as combined markdown.
+
+- **Toggle select mode** from the feed toolbar
+- **Time-range chips** (Today, 7d, 30d, All) to quickly select signals by date
+- **Keyboard shortcuts** — `Cmd/Ctrl+A` to select all, `Cmd/Ctrl+C` to copy markdown, `Enter` to preview, `Escape` to exit
+- **Export preview** — two-tab modal showing rendered markdown and raw code, with copy button
+
 ## PWA
 
 Installable as a standalone app on all platforms.
@@ -84,12 +94,14 @@ Browser extension in `extension/` for batch tab capture.
 
 ## Bug Reporter
 
-Built-in issue filing (floating "report" button, bottom-right).
+Built-in issue filing — bottom-sheet on mobile, modal on desktop.
 
 - Toggle Bug / Feature mode
 - Severity picker for bugs (low → critical)
+- Voice input for description
 - Auto-captures environment context (URL, viewport, user agent, console errors)
 - Posts directly to GitHub Issues via `/api/report`
+- `Cmd/Ctrl+Enter` to submit
 
 ![Bug Reporter](screenshots/08-bug-reporter.png)
 

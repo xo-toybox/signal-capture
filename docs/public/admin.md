@@ -1,6 +1,6 @@
 ---
-commit: b9aa06d
-date: 2026-02-16
+commit: 0110585
+date: 2026-02-17
 topic: admin
 living: true
 ---
@@ -13,10 +13,25 @@ Things the app operator needs to know that aren't obvious from the UI.
 
 ## Bug reporter
 
-Floating button in the bottom-right corner. Opens a modal to file a bug or feature request directly to GitHub Issues via `/api/report`. Includes a severity picker for bugs and auto-captures environment context (URL, viewport, user agent, console errors).
+Bottom-sheet modal triggered by the pill button in the bottom-right corner. Toggle between Bug and Feature mode, pick a severity for bugs, and type a title and description. Environment context (URL, viewport, user agent, console errors) is captured automatically. Posts to GitHub Issues via `/api/report`.
 
-`Cmd+Enter` (`Ctrl+Enter` on Windows) submits from anywhere in the modal. Requires `GITHUB_TOKEN` and `GITHUB_REPO` env vars to be set. If they're missing, the submit will fail with a 502.
+`Cmd+Enter` (`Ctrl+Enter` on Windows) submits from anywhere in the modal. Escape or tapping outside closes it.
+
+Requires `GITHUB_TOKEN` and `GITHUB_REPO` env vars. If they're missing, the reporter shows "not configured" — the rest of the app works fine. Rate-limited to 10 reports per hour.
+
+## Auto-archive
+
+Signals older than 30 days are automatically archived when the Active feed loads. This runs silently in the background — no notification. Starred signals are not exempt; they'll still appear under the Starred filter but will leave the Active view.
+
+The threshold is hardcoded (not configurable via env vars).
 
 ## Desktop PWA refresh
 
-The installed PWA has no address bar or browser refresh button. `Ctrl+R` (`Cmd+R` on Mac) is the only way to reload the page. Worth remembering when the app feels stuck or you've just deployed.
+The installed PWA has no address bar or browser refresh button. `Cmd+R` (`Ctrl+R` on Windows) is the only way to reload. Worth remembering when the app feels stuck or you've just deployed.
+
+## Keyboard shortcuts
+
+| Shortcut | Where | Action |
+|----------|-------|--------|
+| `Escape` | Signal detail, docs pages | Navigate back |
+| `Cmd/Ctrl+Enter` | Capture form, bug reporter | Submit |
