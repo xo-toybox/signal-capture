@@ -12,6 +12,7 @@ export default async function Home() {
     const { data } = await supabase
       .from('signals_feed')
       .select('*')
+      .eq('is_archived', false)
       .order('created_at', { ascending: false })
       .range(0, 19);
     initialSignals = data ?? [];
