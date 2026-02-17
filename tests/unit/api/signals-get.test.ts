@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
-import { mockAuth, mockQueryResult, getLastRange, getLastFromTable, getLastFromClient } from '../mocks/supabase';
+import { mockAuth, mockQueryResult, getLastRange, getLastFromTable, getLastFromClient, getServiceChainCalls } from '../mocks/supabase';
 
 const { GET } = await import('@/app/api/signals/route');
 
@@ -61,5 +61,48 @@ describe('GET /api/signals', () => {
     mockQueryResult({ error: { message: 'db fail' } });
     const res = await GET(makeRequest());
     expect(res.status).toBe(500);
+  });
+
+  describe('auto-archive', () => {
+    it('archives signals older than 30 days when filter=active', async () => {
+      const before = Date.now();
+      await GET(makeRequest('?filter=active'));
+      const after = Date.now();
+
+      const calls = getServiceChainCalls();
+      const updateCall = calls.find(c => c.method === 'update');
+      expect(updateCall).toBeDefined();
+      expect(updateCall!.args[0]).toEqual({ is_archived: true });
+
+      const eqCall = calls.find(c => c.method === 'eq');
+      expect(eqCall).toBeDefined();
+      expect(eqCall!.args).toEqual(['is_archived', false]);
+
+      const ltCall = calls.find(c => c.method === 'lt');
+      expect(ltCall).toBeDefined();
+      expect(ltCall!.args[0]).toBe('created_at');
+
+      // Verify cutoff is ~30 days ago
+      const cutoff = new Date(ltCall!.args[1] as string).getTime();
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+      expect(cutoff).toBeGreaterThanOrEqual(before - thirtyDaysMs - 1000);
+      expect(cutoff).toBeLessThanOrEqual(after - thirtyDaysMs + 1000);
+    });
+
+    it('does not auto-archive for filter=archived', async () => {
+      await GET(makeRequest('?filter=archived'));
+      expect(getServiceChainCalls()).toHaveLength(0);
+    });
+
+    it('does not auto-archive for filter=all', async () => {
+      await GET(makeRequest('?filter=all'));
+      expect(getServiceChainCalls()).toHaveLength(0);
+    });
+
+    it('auto-archives on default filter (active)', async () => {
+      await GET(makeRequest());
+      const calls = getServiceChainCalls();
+      expect(calls.find(c => c.method === 'update')).toBeDefined();
+    });
   });
 });

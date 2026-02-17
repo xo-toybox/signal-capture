@@ -10,6 +10,7 @@ let lastEqCall: [string, unknown] | null = null;
 let lastRangeCall: [number, number] | null = null;
 let lastFromTable: string | null = null;
 let lastFromClient: 'server' | 'service' | null = null;
+let serviceChainCalls: { method: string; args: unknown[] }[] = [];
 
 export function mockAuth(user: User | null) {
   currentUser = user;
@@ -39,22 +40,26 @@ export function getLastFromClient() {
   return lastFromClient;
 }
 
-function createChainProxy() {
+export function getServiceChainCalls() {
+  return serviceChainCalls;
+}
+
+function createChainProxy(onCall?: (method: string, args: unknown[]) => void) {
   const chain: Record<string, unknown> = new Proxy({}, {
     get(_, prop) {
       if (prop === 'then') {
         return (resolve: (v: unknown) => void) => resolve(queryResult);
       }
       if (prop === 'insert') {
-        return (data: unknown) => { lastInsertData = data; return chain; };
+        return (data: unknown) => { lastInsertData = data; onCall?.('insert', [data]); return chain; };
       }
       if (prop === 'eq') {
-        return (col: string, val: unknown) => { lastEqCall = [col, val]; return chain; };
+        return (col: string, val: unknown) => { lastEqCall = [col, val]; onCall?.('eq', [col, val]); return chain; };
       }
       if (prop === 'range') {
-        return (start: number, end: number) => { lastRangeCall = [start, end]; return chain; };
+        return (start: number, end: number) => { lastRangeCall = [start, end]; onCall?.('range', [start, end]); return chain; };
       }
-      return vi.fn().mockReturnValue(chain);
+      return (...args: unknown[]) => { onCall?.(String(prop), args); return chain; };
     },
   });
   return chain;
@@ -64,7 +69,10 @@ function createFrom(client: 'server' | 'service') {
   return (table: string) => {
     lastFromTable = table;
     lastFromClient = client;
-    return createChainProxy();
+    const onCall = client === 'service'
+      ? (method: string, args: unknown[]) => { serviceChainCalls.push({ method, args }); }
+      : undefined;
+    return createChainProxy(onCall);
   };
 }
 
@@ -109,4 +117,5 @@ export function resetMocks() {
   lastRangeCall = null;
   lastFromTable = null;
   lastFromClient = null;
+  serviceChainCalls = [];
 }

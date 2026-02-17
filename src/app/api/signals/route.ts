@@ -177,6 +177,20 @@ export async function GET(request: NextRequest) {
 
   const filter = searchParams.get('filter') ?? 'active';
 
+  // Auto-archive active signals older than 30 days (fire-and-forget)
+  if (filter === 'active') {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const service = createServiceClient();
+    service
+      .from('signals_raw')
+      .update({ is_archived: true })
+      .eq('is_archived', false)
+      .lt('created_at', cutoff)
+      .then(({ error }: { error: unknown }) => {
+        if (error) console.error('auto-archive error:', error);
+      });
+  }
+
   let query = supabase
     .from('signals_feed')
     .select('*');
