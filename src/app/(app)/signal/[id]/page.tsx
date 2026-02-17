@@ -12,6 +12,16 @@ import EscapeBack from '@/components/EscapeBack';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function safeUrl(s: string | null): string | null {
+  if (!s) return null;
+  try {
+    const parsed = new URL(s);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
 function SectionHeader({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 mt-6 mb-2">
@@ -73,15 +83,7 @@ export default async function SignalDetail({
     minute: '2-digit',
   });
 
-  const validatedSourceUrl = (() => {
-    if (!s.source_url) return null;
-    try {
-      const parsed = new URL(s.source_url);
-      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null;
-    } catch {
-      return null;
-    }
-  })();
+  const validatedSourceUrl = safeUrl(s.source_url);
 
   return (
     <main className="pt-6 pb-12">
@@ -96,12 +98,10 @@ export default async function SignalDetail({
       <div className="mt-4">
         {(() => {
           const displayTitle = s.source_title ?? s.fetched_title;
-          if (displayTitle) {
-            return <h1 className="text-lg text-[#e5e5e5] leading-tight">{displayTitle}</h1>;
-          }
+          const title = displayTitle ?? (s.raw_input.length > 100 ? s.raw_input.slice(0, 100) + '...' : s.raw_input);
           return (
-            <h1 className="text-lg font-mono text-[#e5e5e5] leading-tight">
-              {s.raw_input.length > 100 ? s.raw_input.slice(0, 100) + '...' : s.raw_input}
+            <h1 className={`text-lg text-[#e5e5e5] leading-tight${displayTitle ? '' : ' font-mono'}`}>
+              {title}
             </h1>
           );
         })()}
@@ -146,74 +146,78 @@ export default async function SignalDetail({
         </a>
       )}
 
-      {isEnriched && (
-        <>
-          {safeArray(s.key_claims).length > 0 && (
-            <>
-              <SectionHeader label="Key Claims" />
-              <ul className="space-y-1.5">
-                {safeArray(s.key_claims).map((claim, i) => (
-                  <li key={i} className="flex gap-2 text-sm font-mono">
-                    <span className="text-[#525252] flex-shrink-0">-</span>
-                    <span className="text-[#e5e5e5]">{claim}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+      {isEnriched && (() => {
+        const claims = safeArray(s.key_claims);
+        const tags = safeArray(s.domain_tags);
+        return (
+          <>
+            {claims.length > 0 && (
+              <>
+                <SectionHeader label="Key Claims" />
+                <ul className="space-y-1.5">
+                  {claims.map((claim, i) => (
+                    <li key={i} className="flex gap-2 text-sm font-mono">
+                      <span className="text-[#525252] flex-shrink-0">-</span>
+                      <span className="text-[#e5e5e5]">{claim}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
 
-          {s.novelty_assessment && (
-            <>
-              <SectionHeader label="Novelty" />
-              <p className="text-sm text-[#e5e5e5] leading-relaxed">
-                {s.novelty_assessment}
-              </p>
-            </>
-          )}
+            {s.novelty_assessment && (
+              <>
+                <SectionHeader label="Novelty" />
+                <p className="text-sm text-[#e5e5e5] leading-relaxed">
+                  {s.novelty_assessment}
+                </p>
+              </>
+            )}
 
-          {safeArray(s.domain_tags).length > 0 && (
-            <>
-              <SectionHeader label="Tags" />
-              <div className="flex flex-wrap gap-1.5">
-                {safeArray(s.domain_tags).map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-0.5 text-xs font-mono text-[#737373] border border-white/[0.06] rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-
-          {s.cross_signal_notes && (
-            <>
-              <SectionHeader label="Cross-Signal Notes" />
-              <p className="text-sm text-[#e5e5e5] leading-relaxed">
-                {s.cross_signal_notes}
-              </p>
-            </>
-          )}
-
-          {s.confidence !== null && (
-            <>
-              <SectionHeader label="Confidence" />
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-1 bg-white/[0.06] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#3b82f6] rounded-full"
-                    style={{ width: `${(s.confidence ?? 0) * 100}%` }}
-                  />
+            {tags.length > 0 && (
+              <>
+                <SectionHeader label="Tags" />
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-0.5 text-xs font-mono text-[#737373] border border-white/[0.06] rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-                <span className="text-xs font-mono text-[#737373]">
-                  {((s.confidence ?? 0) * 100).toFixed(0)}%
-                </span>
-              </div>
-            </>
-          )}
-        </>
-      )}
+              </>
+            )}
+
+            {s.cross_signal_notes && (
+              <>
+                <SectionHeader label="Cross-Signal Notes" />
+                <p className="text-sm text-[#e5e5e5] leading-relaxed">
+                  {s.cross_signal_notes}
+                </p>
+              </>
+            )}
+
+            {s.confidence !== null && (
+              <>
+                <SectionHeader label="Confidence" />
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#3b82f6] rounded-full"
+                      style={{ width: `${(s.confidence ?? 0) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-mono text-[#737373]">
+                    {((s.confidence ?? 0) * 100).toFixed(0)}%
+                  </span>
+                </div>
+              </>
+            )}
+          </>
+        );
+      })()}
 
       {!isEnriched && s.processing_status === 'pending' && (
         <div className="mt-8 py-6 text-center text-xs text-[#525252] font-mono border-t border-white/[0.06]">

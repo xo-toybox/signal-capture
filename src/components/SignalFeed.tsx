@@ -151,17 +151,15 @@ export default function SignalFeed({ initialSignals }: Props) {
         { event: 'UPDATE', schema: 'public', table: 'signals_raw' },
         (payload) => {
           const updated = payload.new as Partial<SignalFeedItem>;
-          setSignals(prev => {
-            return prev
-              .map(s => s.id === updated.id ? { ...s, ...updated } : s)
-              .filter(s => {
-                // Remove items that no longer match current filter
-                if (filter === 'active' && s.is_archived) return false;
-                if (filter === 'starred' && (!s.is_starred || s.is_archived)) return false;
-                if (filter === 'archived' && !s.is_archived) return false;
-                return true;
-              });
-          });
+          setSignals(prev => prev
+            .map(s => s.id === updated.id ? { ...s, ...updated } : s)
+            .filter(s => {
+              if (filter === 'active' && s.is_archived) return false;
+              if (filter === 'starred' && (!s.is_starred || s.is_archived)) return false;
+              if (filter === 'archived' && !s.is_archived) return false;
+              return true;
+            }),
+          );
         }
       )
       .on(
@@ -220,30 +218,25 @@ export default function SignalFeed({ initialSignals }: Props) {
     setSelectedIds([]);
   }, []);
 
-  // Time-range selection: select all signals within N days
-  const selectByDays = useCallback((days: number | null) => {
-    if (days === null) {
-      // "All" — toggle: select all if not all selected, else clear
-      const allIds = signals.map(s => s.id);
-      setSelectedIds(prev => prev.length === allIds.length ? [] : allIds);
-      return;
-    }
+  const getMatchingIds = useCallback((days: number | null): string[] => {
+    if (days === null) return signals.map(s => s.id);
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-    const matching = signals.filter(s => new Date(s.created_at).getTime() >= cutoff);
-    const matchingIds = matching.map(s => s.id);
-    // Toggle: if all matching are already selected, deselect them
+    return signals.filter(s => new Date(s.created_at).getTime() >= cutoff).map(s => s.id);
+  }, [signals]);
+
+  const selectByDays = useCallback((days: number | null) => {
+    const matchingIds = getMatchingIds(days);
     const allAlreadySelected = matchingIds.length > 0 && matchingIds.every(id => selectedIds.includes(id));
     if (allAlreadySelected) {
       setSelectedIds(prev => prev.filter(id => !matchingIds.includes(id)));
     } else {
-      // Add matching IDs (preserve existing selections + order)
       setSelectedIds(prev => {
         const existing = new Set(prev);
         const toAdd = matchingIds.filter(id => !existing.has(id));
         return [...prev, ...toAdd];
       });
     }
-  }, [signals, selectedIds]);
+  }, [getMatchingIds, selectedIds]);
 
   const getSelectedSignals = useCallback((): SignalFeedItem[] => {
     // Maintain tap-selection order
@@ -378,11 +371,7 @@ export default function SignalFeed({ initialSignals }: Props) {
             { label: '30d', days: 30 },
             { label: 'All', days: null },
           ] as { label: string; days: number | null }[]).map(opt => {
-            // Determine if this range is "active" (all matching signals selected)
-            const cutoff = opt.days !== null ? Date.now() - opt.days * 24 * 60 * 60 * 1000 : 0;
-            const matchingIds = opt.days !== null
-              ? signals.filter(s => new Date(s.created_at).getTime() >= cutoff).map(s => s.id)
-              : signals.map(s => s.id);
+            const matchingIds = getMatchingIds(opt.days);
             const isActive = matchingIds.length > 0 && matchingIds.every(id => selectedIds.includes(id));
 
             return (

@@ -27,13 +27,9 @@ export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode
 
   const onRevealChange = useCallback(
     (side: RevealedSide) => {
-      if (side !== null) {
-        onOpenChange(signal.id);
-      } else if (isOpen) {
-        onOpenChange(null);
-      }
+      onOpenChange(side !== null ? signal.id : null);
     },
-    [signal.id, isOpen, onOpenChange],
+    [signal.id, onOpenChange],
   );
 
   const swipe = useSwipe({

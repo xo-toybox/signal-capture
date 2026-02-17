@@ -108,11 +108,7 @@ function renderSignal(signal: SignalFeedItem, index: number): string {
 }
 
 export function signalsToMarkdown(signals: SignalFeedItem[]): string {
-  const now = new Date().toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const now = formatDate(new Date().toISOString());
 
   const parts: string[] = [];
   parts.push('# Signal Export');
