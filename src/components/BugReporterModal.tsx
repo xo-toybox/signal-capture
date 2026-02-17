@@ -238,76 +238,75 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
           )}
         </div>
 
-        {/* Footer — no border, breathing room */}
-        <div className="flex-shrink-0 px-8 py-5">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              {/* Severity — colored marks, bugs only */}
-              {kind === 'bug' && (
-                <div className="flex items-center gap-2.5">
-                  {SEVERITIES.map((s) => {
-                    const selected = severity === s;
-                    const colors = SEVERITY_COLORS[s];
-                    return (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSeverity(s)}
-                        aria-label={`Severity: ${s}`}
-                        className="flex items-center justify-center w-7 h-7 transition-all duration-400"
-                      >
-                        <span
-                          className="block rounded-full transition-all duration-400"
-                          style={{
-                            width: selected ? 8 : 6,
-                            height: selected ? 8 : 6,
-                            background: selected ? colors.dot : 'rgba(255,255,255,0.12)',
-                            boxShadow: selected ? `0 0 10px ${colors.dot}70, 0 0 4px ${colors.dot}40` : 'none',
-                          }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {/* Divider — only when severity dots are visible */}
-              {kind === 'bug' && (
-                <div className="w-px h-3 bg-white/[0.06]" />
-              )}
-              {/* Claude auto-assign toggle */}
-              <button
-                type="button"
-                onClick={() => setAssignClaude(prev => !prev)}
-                aria-label={assignClaude ? 'Claude will work on this — click to disable' : 'Click to assign to Claude'}
-                className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300"
+        {/* Footer — two rows so controls + actions don't overflow on mobile */}
+        <div className="flex-shrink-0 px-8 py-5 space-y-4">
+          <div className="flex items-center gap-3">
+            {/* Severity — colored marks, bugs only */}
+            {kind === 'bug' && (
+              <div className="flex items-center gap-2.5">
+                {SEVERITIES.map((s) => {
+                  const selected = severity === s;
+                  const colors = SEVERITY_COLORS[s];
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSeverity(s)}
+                      aria-label={`Severity: ${s}`}
+                      className="flex items-center justify-center w-7 h-7 transition-all duration-400"
+                    >
+                      <span
+                        className="block rounded-full transition-all duration-400"
+                        style={{
+                          width: selected ? 8 : 6,
+                          height: selected ? 8 : 6,
+                          background: selected ? colors.dot : 'rgba(255,255,255,0.12)',
+                          boxShadow: selected ? `0 0 10px ${colors.dot}70, 0 0 4px ${colors.dot}40` : 'none',
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Divider — only when severity dots are visible */}
+            {kind === 'bug' && (
+              <div className="w-px h-3 bg-white/[0.06]" />
+            )}
+            {/* Claude auto-assign toggle */}
+            <button
+              type="button"
+              onClick={() => setAssignClaude(prev => !prev)}
+              aria-label={assignClaude ? 'Claude will work on this — click to disable' : 'Click to assign to Claude'}
+              className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300"
+              style={{
+                background: assignClaude ? 'rgba(212,165,116,0.07)' : 'transparent',
+                border: `1px solid ${assignClaude ? 'rgba(212,165,116,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                boxShadow: assignClaude
+                  ? '0 0 16px -4px rgba(212,165,116,0.15), inset 0 0 12px -4px rgba(212,165,116,0.05)'
+                  : 'none',
+              }}
+            >
+              <span
+                className="text-[9px] leading-none transition-all duration-300"
                 style={{
-                  background: assignClaude ? 'rgba(212,165,116,0.07)' : 'transparent',
-                  border: `1px solid ${assignClaude ? 'rgba(212,165,116,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                  boxShadow: assignClaude
-                    ? '0 0 16px -4px rgba(212,165,116,0.15), inset 0 0 12px -4px rgba(212,165,116,0.05)'
-                    : 'none',
+                  color: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.1)',
+                  filter: assignClaude ? 'drop-shadow(0 0 3px rgba(212,165,116,0.5))' : 'none',
                 }}
               >
-                <span
-                  className="text-[9px] leading-none transition-all duration-300"
-                  style={{
-                    color: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.1)',
-                    filter: assignClaude ? 'drop-shadow(0 0 3px rgba(212,165,116,0.5))' : 'none',
-                  }}
-                >
-                  ✦
-                </span>
-                <span
-                  className="font-mono text-[10px] tracking-[0.08em] leading-none transition-all duration-300"
-                  style={{
-                    color: assignClaude ? 'rgba(212,165,116,0.85)' : 'rgba(255,255,255,0.12)',
-                  }}
-                >
-                  claude
-                </span>
-              </button>
-            </div>
-            <div className="flex-1" />
+                ✦
+              </span>
+              <span
+                className="font-mono text-[10px] tracking-[0.08em] leading-none transition-all duration-300"
+                style={{
+                  color: assignClaude ? 'rgba(212,165,116,0.85)' : 'rgba(255,255,255,0.12)',
+                }}
+              >
+                claude
+              </span>
+            </button>
+          </div>
+          <div className="flex items-center justify-end gap-4">
             <button
               type="button"
               onClick={onClose}
