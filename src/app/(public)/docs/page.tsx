@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getAllDocs } from '@/lib/docs';
+import EscapeBack from '@/components/EscapeBack';
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -18,6 +19,7 @@ export default function DocsPage() {
 
   return (
     <main className="pt-6 space-y-6">
+      <EscapeBack href="/" />
       <header>
         <Link
           href="/"

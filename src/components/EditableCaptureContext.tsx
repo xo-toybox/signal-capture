@@ -64,6 +64,7 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Escape') {
+      e.stopPropagation();
       e.preventDefault();
       cancel();
     } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {

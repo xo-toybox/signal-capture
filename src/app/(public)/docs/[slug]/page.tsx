@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getDoc, getDocSlugs } from '@/lib/docs';
 import Prose from '@/components/Prose';
+import EscapeBack from '@/components/EscapeBack';
 
 function topicTitle(topic: string): string {
   return topic
@@ -41,6 +42,7 @@ export default async function DocDetailPage({
 
   return (
     <main className="pt-6 space-y-5">
+      <EscapeBack href="/docs" />
       <header className="space-y-3">
         <Link
           href="/docs"

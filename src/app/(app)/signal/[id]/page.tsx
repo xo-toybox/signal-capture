@@ -8,6 +8,7 @@ import EditableCaptureContext from '@/components/EditableCaptureContext';
 import StarButton from '@/components/StarButton';
 import ArchiveButton from '@/components/ArchiveButton';
 import { STATUS_LABELS, STATUS_TEXT_COLORS } from '@/lib/constants';
+import EscapeBack from '@/components/EscapeBack';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -84,6 +85,7 @@ export default async function SignalDetail({
 
   return (
     <main className="pt-6 pb-12">
+      <EscapeBack href="/" />
       <Link
         href="/"
         className="text-xs font-mono text-[#737373] hover:text-[#e5e5e5] transition-colors"
