@@ -8,9 +8,9 @@ import { useVoiceInsert } from '@/lib/use-voice-insert';
 import VoiceInput from './VoiceInput';
 
 const SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
-const KINDS: { key: ReportKind; label: string; dot: string }[] = [
-  { key: 'bug', label: 'Bug', dot: '#ef4444' },
-  { key: 'feature', label: 'Feature', dot: '#3b82f6' },
+const KINDS: { key: ReportKind; label: string; color: string }[] = [
+  { key: 'bug', label: 'Bug', color: '#ef4444' },
+  { key: 'feature', label: 'Feature', color: '#3b82f6' },
 ];
 
 interface Props {
@@ -35,7 +35,8 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     descriptionRef, () => description, setDescription,
   );
 
-  // Reset form when opening
+  const accent = kind === 'bug' ? '#ef4444' : '#3b82f6';
+
   useEffect(() => {
     if (open) {
       setKind('bug');
@@ -49,7 +50,6 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     }
   }, [open]);
 
-  // Focus trap
   const handleTabTrap = useCallback((e: KeyboardEvent) => {
     if (e.key !== 'Tab' || !panelRef.current) return;
     const focusable = panelRef.current.querySelectorAll<HTMLElement>(
@@ -110,11 +110,11 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     }
   }, [title, submitting, description, kind, severity, assignClaude, onSuccess]);
 
-  // Escape to close, Cmd+Enter to submit
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.stopPropagation();
         e.preventDefault();
         onClose();
       } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -122,196 +122,202 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
         handleSubmit();
       }
     };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    document.addEventListener('keydown', handleKey, true);
+    return () => document.removeEventListener('keydown', handleKey, true);
   }, [open, onClose, handleSubmit]);
 
   if (!open) return null;
 
+  const isMac = typeof navigator !== 'undefined' && /Mac/.test(navigator.userAgent);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
       aria-label={kind === 'bug' ? 'Bug Report' : 'Feature Request'}
-      style={{
-        animation: 'fadeIn 200ms ease-out forwards'
-      }}
+      style={{ animation: 'brm-fadeIn 150ms ease-out forwards' }}
     >
       <div
+        className="absolute inset-0"
+        style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(16px) saturate(0.5)' }}
+      />
+
+      <div
         ref={panelRef}
-        className="relative w-full max-w-[32rem] max-h-[90vh] bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden flex flex-col"
+        className="relative w-full sm:max-w-[26rem] max-h-[88vh] flex flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl"
         style={{
-          animation: 'scaleIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
-          boxShadow: `
-            0 0 0 1px rgba(255,255,255,0.05),
-            0 20px 60px -10px rgba(0,0,0,0.9),
-            0 0 80px -20px ${kind === 'bug' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)'}
-          `
+          animation: 'brm-slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          background: '#0e0e0e',
+          border: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: 'none',
+          boxShadow: '0 -4px 40px rgba(0,0,0,0.4)',
         }}
       >
-        {/* Accent gradient header */}
-        <div
-          className="h-[2px] flex-shrink-0"
-          style={{
-            background: kind === 'bug'
-              ? 'linear-gradient(90deg, #ef4444 0%, #dc2626 50%, transparent 100%)'
-              : 'linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, transparent 100%)',
-            animation: 'slideIn 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards'
-          }}
-        />
+        {/* Drag handle (mobile) */}
+        <div className="flex-shrink-0 pt-2.5 pb-1 sm:hidden">
+          <div className="w-9 h-[3px] rounded-full mx-auto" style={{ background: 'rgba(255,255,255,0.12)' }} />
+        </div>
 
-        {/* Scrollable content */}
-        <div className="px-8 pt-7 pb-6 space-y-7 overflow-y-auto flex-1">
-          {/* Kind toggle + ESC — no container, just typography */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              {KINDS.map(k => (
+        {/* Header: kind toggle + close */}
+        <div className="flex-shrink-0 px-5 pt-3 sm:pt-5 pb-3 flex items-center justify-between">
+          <div className="flex items-center gap-0.5 p-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            {KINDS.map(k => {
+              const active = kind === k.key;
+              return (
                 <button
                   key={k.key}
                   type="button"
                   onClick={() => { setKind(k.key); setAssignClaude(k.key === 'bug'); }}
-                  className={`font-mono text-sm tracking-[0.08em] transition-all duration-400 ${
-                    kind !== k.key ? 'hover:opacity-60' : ''
-                  }`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[11px] tracking-wide transition-all duration-200"
                   style={{
-                    color: kind === k.key ? k.dot : 'rgba(255,255,255,0.15)',
-                    textShadow: kind === k.key ? `0 0 20px ${k.dot}40` : 'none',
+                    color: active ? '#fff' : 'rgba(255,255,255,0.28)',
+                    background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
                   }}
                 >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full transition-all duration-200"
+                    style={{
+                      background: active ? k.color : 'rgba(255,255,255,0.1)',
+                      boxShadow: active ? `0 0 6px ${k.color}50` : 'none',
+                    }}
+                  />
                   {k.label}
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-7 h-7 flex items-center justify-center rounded-full transition-colors duration-150"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
+            aria-label="Close"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <div className="px-5 pb-3 space-y-4 overflow-y-auto flex-1">
+          {/* Title + Claude toggle inline */}
+          <div className="flex items-center gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+            <input
+              ref={titleRef}
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={256}
+              className="flex-1 min-w-0 bg-transparent border-0 px-0 py-2.5 font-mono text-[15px] text-white/90 placeholder:text-white/20 outline-none"
+              placeholder="What happened?"
+              onFocus={() => {
+                const row = titleRef.current?.parentElement;
+                if (row) row.style.borderColor = `${accent}35`;
+              }}
+              onBlur={() => {
+                const row = titleRef.current?.parentElement;
+                if (row) row.style.borderColor = 'rgba(255,255,255,0.06)';
+              }}
+            />
             <button
-              onClick={onClose}
-              className="font-mono text-[10px] tracking-[0.2em] text-white/25 hover:text-white/50 transition-colors duration-200"
+              type="button"
+              onClick={() => setAssignClaude(prev => !prev)}
+              aria-label={assignClaude ? 'Claude will work on this — click to disable' : 'Click to assign to Claude'}
+              className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-full font-mono text-[10px] tracking-wide transition-all duration-200"
+              style={{
+                background: assignClaude ? 'rgba(212,165,116,0.06)' : 'transparent',
+                border: `1px solid ${assignClaude ? 'rgba(212,165,116,0.16)' : 'rgba(255,255,255,0.06)'}`,
+                color: assignClaude ? 'rgba(212,165,116,0.8)' : 'rgba(255,255,255,0.13)',
+              }}
             >
-              ESC
+              <span className="text-[8px] leading-none" style={{ filter: assignClaude ? 'drop-shadow(0 0 2px rgba(212,165,116,0.4))' : 'none' }}>✦</span>
+              claude
             </button>
           </div>
 
-          {/* Title — bottom border only */}
-          <input
-            ref={titleRef}
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={256}
-            className="w-full bg-transparent border-0 border-b border-white/[0.08] rounded-none px-0 py-3 font-mono text-base text-white/90 placeholder:text-white/25 outline-none transition-all duration-300"
-            placeholder="Title"
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = kind === 'bug' ? '#ef444450' : '#3b82f650';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-            }}
-          />
-
-          {/* Description with voice input */}
-          <div className="flex items-end gap-2 border-b border-white/[0.08]">
+          {/* Description */}
+          <div
+            className="rounded-xl overflow-hidden transition-colors duration-200"
+            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
+          >
             <textarea
               ref={descriptionRef}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="flex-1 bg-transparent border-0 rounded-none px-0 py-3 font-mono text-sm leading-relaxed text-white/90 placeholder:text-white/25 outline-none resize-none"
-              placeholder="Description (optional)"
+              className="w-full bg-transparent border-0 px-3.5 pt-3 pb-1 font-mono text-sm leading-relaxed text-white/85 placeholder:text-white/18 outline-none resize-none"
+              placeholder="Details (optional)"
+              onFocus={() => {
+                const c = descriptionRef.current?.parentElement;
+                if (c) c.style.borderColor = `${accent}20`;
+              }}
+              onBlur={() => {
+                const c = descriptionRef.current?.parentElement;
+                if (c) c.style.borderColor = 'rgba(255,255,255,0.05)';
+              }}
             />
-            <div className="py-2">
-              <VoiceInput
-                onStart={descVoice.onStart}
-                onTranscript={descVoice.onTranscript}
-              />
+            <div className="flex justify-end px-2 pb-2">
+              <VoiceInput onStart={descVoice.onStart} onTranscript={descVoice.onTranscript} />
             </div>
           </div>
 
           {/* Error */}
           {error && (
-            <p
-              className="font-mono text-sm text-[#ef4444]"
-              style={{ animation: 'slideDown 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
-            >
+            <p className="font-mono text-[12px]" style={{ color: '#ef4444', animation: 'brm-fadeIn 150ms ease-out' }}>
               {error}
             </p>
           )}
         </div>
 
-        {/* Footer — two rows so controls + actions don't overflow on mobile */}
-        <div className="flex-shrink-0 px-8 py-5 space-y-4">
-          <div className="flex items-center gap-3">
-            {/* Severity — colored marks, bugs only */}
-            {kind === 'bug' && (
-              <div className="flex items-center gap-2.5">
-                {SEVERITIES.map((s) => {
-                  const selected = severity === s;
-                  const colors = SEVERITY_COLORS[s];
+        {/* Footer */}
+        <div className="flex-shrink-0 px-5 pb-5 pt-1 flex items-center justify-between">
+          {/* Severity dots — bugs only */}
+          <div className="flex items-center gap-1">
+            {kind === 'bug' ? (
+              <>
+                {SEVERITIES.map(s => {
+                  const sel = severity === s;
+                  const c = SEVERITY_COLORS[s];
                   return (
                     <button
                       key={s}
                       type="button"
                       onClick={() => setSeverity(s)}
                       aria-label={`Severity: ${s}`}
-                      className="flex items-center justify-center w-7 h-7 transition-all duration-400"
+                      className="w-6 h-6 flex items-center justify-center"
                     >
                       <span
-                        className="block rounded-full transition-all duration-400"
+                        className="rounded-full transition-all duration-200"
                         style={{
-                          width: selected ? 8 : 6,
-                          height: selected ? 8 : 6,
-                          background: selected ? colors.dot : 'rgba(255,255,255,0.12)',
-                          boxShadow: selected ? `0 0 10px ${colors.dot}70, 0 0 4px ${colors.dot}40` : 'none',
+                          width: sel ? 8 : 5,
+                          height: sel ? 8 : 5,
+                          background: sel ? c.dot : 'rgba(255,255,255,0.08)',
+                          boxShadow: sel ? `0 0 8px ${c.dot}45` : 'none',
                         }}
                       />
                     </button>
                   );
                 })}
-              </div>
+                <span className="font-mono text-[10px] tracking-wide ml-0.5" style={{ color: `${SEVERITY_COLORS[severity].dot}cc` }}>
+                  {severity}
+                </span>
+              </>
+            ) : (
+              <span />
             )}
-            {/* Divider — only when severity dots are visible */}
-            {kind === 'bug' && (
-              <div className="w-px h-3 bg-white/[0.06]" />
-            )}
-            {/* Claude auto-assign toggle */}
-            <button
-              type="button"
-              onClick={() => setAssignClaude(prev => !prev)}
-              aria-label={assignClaude ? 'Claude will work on this — click to disable' : 'Click to assign to Claude'}
-              className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300"
-              style={{
-                background: assignClaude ? 'rgba(212,165,116,0.07)' : 'transparent',
-                border: `1px solid ${assignClaude ? 'rgba(212,165,116,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                boxShadow: assignClaude
-                  ? '0 0 16px -4px rgba(212,165,116,0.15), inset 0 0 12px -4px rgba(212,165,116,0.05)'
-                  : 'none',
-              }}
-            >
-              <span
-                className="text-[9px] leading-none transition-all duration-300"
-                style={{
-                  color: assignClaude ? '#d4a574' : 'rgba(255,255,255,0.1)',
-                  filter: assignClaude ? 'drop-shadow(0 0 3px rgba(212,165,116,0.5))' : 'none',
-                }}
-              >
-                ✦
-              </span>
-              <span
-                className="font-mono text-[10px] tracking-[0.08em] leading-none transition-all duration-300"
-                style={{
-                  color: assignClaude ? 'rgba(212,165,116,0.85)' : 'rgba(255,255,255,0.12)',
-                }}
-              >
-                claude
-              </span>
-            </button>
           </div>
-          <div className="flex items-center justify-end gap-4">
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="font-mono text-sm text-white/30 hover:text-white/60 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-2 font-mono text-[13px] rounded-xl transition-colors duration-150 disabled:opacity-40"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
             >
               Cancel
             </button>
@@ -319,67 +325,51 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
               type="button"
               onClick={handleSubmit}
               disabled={!title.trim() || submitting}
-              className="px-5 py-2 rounded-lg font-mono text-sm font-medium text-white transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl font-mono text-[13px] font-medium text-white transition-all duration-200 disabled:opacity-20"
               style={{
-                background: kind === 'bug'
-                  ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-                  : 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                boxShadow: submitting ? 'none' : `0 4px 16px -4px ${kind === 'bug' ? '#ef4444' : '#3b82f6'}60`,
+                background: !title.trim() || submitting ? 'rgba(255,255,255,0.05)' : accent,
+                boxShadow: title.trim() && !submitting ? `0 2px 16px -4px ${accent}50` : 'none',
               }}
             >
               {submitting ? (
-                <span className="flex items-center gap-2">
-                  <span className="block w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '0ms' }} />
-                  <span className="block w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '150ms' }} />
-                  <span className="block w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '300ms' }} />
+                <span className="flex items-center gap-1.5 px-1">
+                  <span className="w-1 h-1 rounded-full bg-white" style={{ animation: 'brm-pulse 1s ease-in-out infinite' }} />
+                  <span className="w-1 h-1 rounded-full bg-white" style={{ animation: 'brm-pulse 1s ease-in-out infinite', animationDelay: '150ms' }} />
+                  <span className="w-1 h-1 rounded-full bg-white" style={{ animation: 'brm-pulse 1s ease-in-out infinite', animationDelay: '300ms' }} />
                 </span>
-              ) : 'Submit'}
+              ) : (
+                <>
+                  Submit
+                  <kbd className="hidden sm:inline text-[10px] opacity-40">{isMac ? '⌘↵' : 'Ctrl↵'}</kbd>
+                </>
+              )}
             </button>
           </div>
         </div>
       </div>
 
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+        @keyframes brm-fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95) translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
+        @keyframes brm-slideUp {
+          from { opacity: 0; transform: translateY(60px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideIn {
-          from {
-            transform: translateX(-100%);
-          }
-          to {
-            transform: translateX(0);
-          }
+        @keyframes brm-pulse {
+          0%, 80%, 100% { opacity: 0.2; }
+          40% { opacity: 1; }
         }
 
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
+        @media (min-width: 640px) {
+          @keyframes brm-slideUp {
+            from { opacity: 0; transform: scale(0.97) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
           }
         }
-
       `}</style>
     </div>
   );
