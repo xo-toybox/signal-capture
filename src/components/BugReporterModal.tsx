@@ -5,6 +5,10 @@ import { getErrors } from '@/lib/console-error-buffer';
 import type { Severity, ReportKind, BugReportSuccess } from '@/lib/bug-report-types';
 import { SEVERITY_COLORS } from '@/lib/bug-report-types';
 
+// Sentinel-wrapped interim marker pattern: \u200B[...]\u200B
+// Uses zero-width spaces to distinguish from user-typed brackets
+const INTERIM_PATTERN = /\s*\u200B\[[\s\S]*?\]\u200B$/;
+
 const SEVERITIES: Severity[] = ['low', 'medium', 'high', 'critical'];
 const KINDS: { key: ReportKind; label: string; dot: string }[] = [
   { key: 'bug', label: 'Bug', dot: '#ef4444' },
@@ -30,8 +34,10 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
   const titleRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const isRecordingRef = useRef(false);
+  const finalTranscriptRef = useRef('');
 
-  // Initialize speech recognition
+  // Initialize speech recognition once
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -53,39 +59,38 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    let finalTranscript = '';
-
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' ';
+          finalTranscriptRef.current += transcript + ' ';
         } else {
           interimTranscript += transcript;
         }
       }
 
       setDescription(prev => {
-        const baseText = prev.replace(/\s*\[.*?\]\s*$/, '').trim();
-        const combined = (baseText + ' ' + finalTranscript).trim();
+        const baseText = prev.replace(INTERIM_PATTERN, '').trim();
+        const combined = (baseText + ' ' + finalTranscriptRef.current).trim();
         return interimTranscript
-          ? combined + ' [' + interimTranscript + ']'
+          ? combined + ' \u200B[' + interimTranscript + ']\u200B'
           : combined;
       });
     };
 
     recognition.onerror = () => {
+      isRecordingRef.current = false;
       setIsRecording(false);
       setError('Voice recognition error — please try again');
     };
 
     recognition.onend = () => {
-      if (isRecording) {
-        // Clean up interim text markers when recording stops
-        setDescription(prev => prev.replace(/\s*\[.*?\]\s*$/, '').trim());
+      if (isRecordingRef.current) {
+        setDescription(prev => prev.replace(INTERIM_PATTERN, '').trim());
       }
+      isRecordingRef.current = false;
       setIsRecording(false);
     };
 
@@ -94,11 +99,14 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
     return () => {
       recognition.stop();
     };
-  }, [isRecording]);
+  }, []);
 
   // Reset form when opening
   useEffect(() => {
     if (open) {
+      if (isRecordingRef.current && recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
       setKind('bug');
       setTitle('');
       setDescription('');
@@ -107,14 +115,16 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
       setSubmitting(false);
       setError('');
       setIsRecording(false);
+      isRecordingRef.current = false;
+      finalTranscriptRef.current = '';
       setTimeout(() => titleRef.current?.focus(), 50);
     } else {
       // Stop recording when modal closes
-      if (isRecording && recognitionRef.current) {
+      if (isRecordingRef.current && recognitionRef.current) {
         recognitionRef.current.stop();
       }
     }
-  }, [open, isRecording]);
+  }, [open]);
 
   // Focus trap
   const handleTabTrap = useCallback((e: KeyboardEvent) => {
@@ -147,7 +157,9 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
       recognitionRef.current.stop();
     } else {
       setError('');
+      finalTranscriptRef.current = '';
       recognitionRef.current.start();
+      isRecordingRef.current = true;
       setIsRecording(true);
     }
   }, [isRecording, recognitionSupported]);
@@ -162,13 +174,16 @@ export default function BugReporterModal({ open, onClose, onSuccess }: Props) {
       recognitionRef.current.stop();
     }
 
+    // Strip interim markers synchronously before sending (stop() is async)
+    const cleanDescription = description.replace(INTERIM_PATTERN, '').trim();
+
     try {
       const res = await fetch('/api/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
-          description: description.trim(),
+          description: cleanDescription,
           kind,
           severity,
           assignClaude,
