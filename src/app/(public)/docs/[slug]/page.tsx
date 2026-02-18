@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { getDoc, getDocSlugs } from '@/lib/docs';
 import Prose from '@/components/Prose';
 import EscapeBack from '@/components/EscapeBack';
@@ -41,24 +40,11 @@ export default async function DocDetailPage({
     .replace(/!\[.*?\]\(.*?\)\n*/g, '');
 
   return (
-    <main className="pt-6 space-y-5">
-      <EscapeBack href="/docs" />
-      <header className="space-y-3">
-        <Link
-          href="/docs"
-          className="text-xs font-mono text-[#737373] hover:text-[#e5e5e5] transition-colors"
-        >
-          &larr; Docs
-        </Link>
-
-        <div>
-          <h1 className="text-lg text-[#e5e5e5]">
-            {topicTitle(doc.topic)}
-          </h1>
-          <p className="text-xs font-mono text-[#525252] mt-1">
-            {formatDate(doc.date)}
-          </p>
-        </div>
+    <main className="space-y-5">
+      <EscapeBack href="/" />
+      <header className="space-y-1">
+        <h1 className="text-lg text-[#e5e5e5]">{topicTitle(doc.topic)}</h1>
+        <p className="text-xs font-mono text-[#525252]">{formatDate(doc.date)}</p>
       </header>
 
       <div className="h-px bg-white/[0.06]" />
