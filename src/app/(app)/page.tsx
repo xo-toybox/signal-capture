@@ -32,6 +32,14 @@ export default async function Home() {
         >
           docs
         </Link>
+        <a
+          href="https://github.com/xo-toybox/signal-capture"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-mono text-[#525252] hover:text-[#737373] transition-colors"
+        >
+          github
+        </a>
       </header>
 
       <Suspense fallback={null}>
