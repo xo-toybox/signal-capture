@@ -44,3 +44,35 @@ export function getAllDocs(): Doc[] {
     .filter((doc): doc is Doc => doc !== null)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
+
+export interface DocMeta {
+  slug: string;
+  topic: string;
+  date: string;
+}
+
+/** Like getAllDocs but reads only frontmatter, skipping content. */
+export function getAllDocsMeta(): DocMeta[] {
+  return getDocSlugs()
+    .map((slug) => {
+      const filePath = path.join(DOCS_DIR, `${slug}.md`);
+      const raw = fs.readFileSync(filePath, 'utf-8');
+      const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
+      if (!fmMatch) return null;
+      const frontmatter = fmMatch[1];
+      const topic =
+        frontmatter.match(/^topic:\s*(.+)$/m)?.[1]?.trim() ?? slug;
+      const date =
+        frontmatter.match(/^date:\s*(.+)$/m)?.[1]?.trim() ?? '';
+      return { slug, topic, date };
+    })
+    .filter((doc): doc is DocMeta => doc !== null)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function topicTitle(topic: string): string {
+  return topic
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}

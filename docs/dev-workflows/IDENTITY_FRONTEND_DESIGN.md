@@ -1,5 +1,11 @@
 # Frontend Design Identity
 
+<!-- 
+    This document defines design character and principles, not implementation rules.
+    Don't add specific CSS values, class names, or pixel measurements here.
+    Those belong in code. This belongs in your head. 
+-->
+
 ## North Star
 
 **"Easy to use, happy to look at."**
@@ -90,9 +96,15 @@ Mobile is the capture device. Desktop is the power-user device. Both get first-c
 
 **Desktop:** Keyboard shortcuts should be standard and discoverable — shown inline, platform-aware (Cmd on Mac, Ctrl elsewhere). Hover states add information, not just decoration. Dense layouts are fine; screens are big. Power-user affordances (multi-select, bulk actions, keyboard navigation) belong here.
 
-**Mobile:** Touch targets must be generous. Swipe gestures for common actions. Bottom-anchored modals and sheets. Hide keyboard hints that don't apply. The capture experience — typing, voice, share-to-app — is the priority. Every interaction must work with one thumb.
+**Mobile:** Touch targets must be at least 44px. Swipe gestures for common actions. Bottom-anchored modals and sheets. Hide keyboard hints that don't apply. The capture experience — typing, voice, share-to-app — is the priority. Every interaction must work with one thumb.
 
 **Both:** Test every feature on both. If it's not usable on one, it's not done.
+
+### Failure modes
+
+- Icons describe the destination, not the mechanism. A panel icon for a sidebar, not a hamburger.
+- Interactive elements belong in the layout, not floating over it.
+- Active states use accent color. Background-only shifts are invisible.
 
 ---
 

@@ -38,10 +38,10 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
       <div className="flex-1 px-3 py-2.5 min-w-0">
         {isEnriched ? (
           <>
-            <div className="text-sm text-[#e5e5e5] truncate">
+            <div className="text-sm text-[#e5e5e5] line-clamp-2">
               {signal.source_title}
             </div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-[#737373]">
+            <div className="flex items-center gap-2 mt-1 text-xs text-[#a0a0a0]">
               {claimCount > 0 && (
                 <span>{claimCount} claim{claimCount !== 1 ? 's' : ''}</span>
               )}
@@ -57,11 +57,11 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
           </>
         ) : (
           <>
-            <div className={`text-sm ${displayTitle ? '' : 'font-mono'} text-[#e5e5e5] truncate`}>
+            <div className={`text-sm ${displayTitle ? '' : 'font-mono'} text-[#e5e5e5] line-clamp-2`}>
               {displayTitle ?? signal.raw_input}
             </div>
             {signal.capture_context && (
-              <div className="text-xs text-[#737373] mt-1 truncate">
+              <div className="text-xs text-[#a0a0a0] mt-1 truncate">
                 {signal.capture_context}
               </div>
             )}
@@ -69,11 +69,14 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
         )}
       </div>
 
-      {/* Actions — always visible, hover-to-reveal off-state on desktop */}
-      <div className="flex-shrink-0 flex items-center gap-0.5 px-2 py-2.5 self-start">
-        <StarButton signalId={signal.id} isStarred={signal.is_starred} />
-        <ArchiveButton signalId={signal.id} isArchived={signal.is_archived} />
-        <span className="text-xs text-[#525252] font-mono pl-1">
+      <div className="flex-shrink-0 flex items-center gap-0.5 pl-1 pr-1 sm:px-2 py-2.5 self-start">
+        <span className="hidden sm:inline-flex">
+          <StarButton signalId={signal.id} isStarred={signal.is_starred} />
+        </span>
+        <span className="hidden sm:inline-flex">
+          <ArchiveButton signalId={signal.id} isArchived={signal.is_archived} />
+        </span>
+        <span className="text-xs text-[#888888] font-mono sm:pl-0">
           {relativeTime(signal.created_at)}
         </span>
         <InlineDeleteButton signalId={signal.id} />

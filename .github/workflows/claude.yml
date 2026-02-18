@@ -54,7 +54,17 @@ jobs:
             Run make check before considering work complete.
             Keep changes focused.
             Write tests for new functionality.
-            Follow existing patterns in CLAUDE.md."
+            Follow existing patterns in CLAUDE.md.
+            ARCHITECTURE:
+            Read CLAUDE.md first — it defines route groups, access tiers, API patterns, and styling rules.
+            Public pages go in (public) route group AND need their path added to PUBLIC_PATHS in proxy.ts.
+            Authenticated pages go in (app) route group.
+            DESIGN:
+            For any UI change, read docs/dev-workflows/IDENTITY_FRONTEND_DESIGN.md before writing code.
+            Follow the design identity: dark-only, monospace voice, meaningful color, dense layout, no decoration.
+            Use existing color variables from globals.css (--background, --foreground, --muted, --accent, --border).
+            No arbitrary Tailwind values — use project hex colors or CSS vars.
+            Match the visual weight and styling of surrounding elements."
           settings: |
             {
               "permissions": {

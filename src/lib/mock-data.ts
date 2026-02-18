@@ -40,7 +40,7 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     processing_status: 'complete',
     processed_at: new Date(now - 30 * 60000).toISOString(),
     fetched_title: null,
-    is_starred: false,
+    is_starred: true,
     is_archived: false,
     source_title: 'Ralph Loop: Session Memory Architecture',
     key_claims: [
@@ -96,7 +96,7 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     processed_at: new Date(now - 20 * hour).toISOString(),
     fetched_title: null,
     is_starred: false,
-    is_archived: false,
+    is_archived: true,
     source_title: null,
     key_claims: null,
     novelty_assessment: null,
@@ -120,7 +120,7 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     processing_status: 'complete',
     processed_at: new Date(now - 1.5 * day).toISOString(),
     fetched_title: null,
-    is_starred: false,
+    is_starred: true,
     is_archived: false,
     source_title: 'World Models vs Word Models: The Architecture Gap',
     key_claims: [

@@ -25,7 +25,7 @@ function safeUrl(s: string | null): string | null {
 function SectionHeader({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 mt-6 mb-2">
-      <span className="text-[10px] font-mono uppercase tracking-widest text-[#525252]">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-[#888888]">
         {label}
       </span>
       <div className="flex-1 h-px bg-white/[0.06]" />
@@ -62,11 +62,11 @@ export default async function SignalDetail({
       <main className="pt-6">
         <Link
           href="/"
-          className="text-xs font-mono text-[#737373] hover:text-[#e5e5e5] transition-colors"
+          className="text-xs font-mono text-[#a0a0a0] hover:text-[#e5e5e5] transition-colors"
         >
           &larr; back
         </Link>
-        <div className="py-12 text-center text-xs text-[#525252] font-mono">
+        <div className="py-12 text-center text-xs text-[#888888] font-mono">
           signal not found
         </div>
       </main>
@@ -90,7 +90,7 @@ export default async function SignalDetail({
       <EscapeBack href="/" />
       <Link
         href="/"
-        className="text-xs font-mono text-[#737373] hover:text-[#e5e5e5] transition-colors"
+        className="text-xs font-mono text-[#a0a0a0] hover:text-[#e5e5e5] transition-colors"
       >
         &larr; back
       </Link>
@@ -116,18 +116,18 @@ export default async function SignalDetail({
           {s.source_tier && (
             <>
               <span className="text-white/10">|</span>
-              <span className="text-[#737373] font-mono">{s.source_tier}</span>
+              <span className="text-[#a0a0a0] font-mono">{s.source_tier}</span>
             </>
           )}
           {s.frontier_status && s.frontier_status !== 'not_frontier' && (
             <>
               <span className="text-white/10">|</span>
-              <span className="text-[#737373] font-mono">{s.frontier_status}</span>
+              <span className="text-[#a0a0a0] font-mono">{s.frontier_status}</span>
             </>
           )}
         </div>
 
-        <div className="text-xs text-[#525252] mt-1 font-mono">{capturedAt}</div>
+        <div className="text-xs text-[#888888] mt-1 font-mono">{capturedAt}</div>
       </div>
 
       <SectionHeader label="Raw Capture" />
@@ -157,7 +157,7 @@ export default async function SignalDetail({
                 <ul className="space-y-1.5">
                   {claims.map((claim, i) => (
                     <li key={i} className="flex gap-2 text-sm font-mono">
-                      <span className="text-[#525252] flex-shrink-0">-</span>
+                      <span className="text-[#888888] flex-shrink-0">-</span>
                       <span className="text-[#e5e5e5]">{claim}</span>
                     </li>
                   ))}
@@ -181,7 +181,7 @@ export default async function SignalDetail({
                   {tags.map((tag, i) => (
                     <span
                       key={i}
-                      className="px-2 py-0.5 text-xs font-mono text-[#737373] border border-white/[0.06] rounded"
+                      className="px-2 py-0.5 text-xs font-mono text-[#a0a0a0] border border-white/[0.06] rounded"
                     >
                       {tag}
                     </span>
@@ -209,7 +209,7 @@ export default async function SignalDetail({
                       style={{ width: `${(s.confidence ?? 0) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs font-mono text-[#737373]">
+                  <span className="text-xs font-mono text-[#a0a0a0]">
                     {((s.confidence ?? 0) * 100).toFixed(0)}%
                   </span>
                 </div>
@@ -220,7 +220,7 @@ export default async function SignalDetail({
       })()}
 
       {!isEnriched && s.processing_status === 'pending' && (
-        <div className="mt-8 py-6 text-center text-xs text-[#525252] font-mono border-t border-white/[0.06]">
+        <div className="mt-8 py-6 text-center text-xs text-[#888888] font-mono border-t border-white/[0.06]">
           awaiting enrichment
         </div>
       )}
@@ -229,7 +229,7 @@ export default async function SignalDetail({
         <>
           <SectionHeader label="Notes" />
           {s.human_rating && (
-            <div className="text-xs font-mono text-[#737373] mb-1">
+            <div className="text-xs font-mono text-[#a0a0a0] mb-1">
               Rating: {s.human_rating}/5
             </div>
           )}

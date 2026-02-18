@@ -78,7 +78,7 @@ export default function VoiceInput({ onTranscript, onStart }: VoiceInputProps) {
       className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded transition-colors duration-150 ${
         isRecording
           ? 'text-red-500 recording-pulse'
-          : 'text-[#737373] hover:text-[#e5e5e5]'
+          : 'text-[#a0a0a0] hover:text-[#e5e5e5]'
       }`}
       aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
     >

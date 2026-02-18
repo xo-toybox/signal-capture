@@ -41,7 +41,7 @@ export default function InlineDeleteButton({ signalId }: { signalId: string }) {
 
   if (deleting) {
     return (
-      <span className="text-[10px] font-mono text-[#525252] px-2">...</span>
+      <span className="text-[10px] font-mono text-[#888888] px-2">...</span>
     );
   }
 
@@ -51,7 +51,7 @@ export default function InlineDeleteButton({ signalId }: { signalId: string }) {
       className={`px-2 py-1 min-w-[28px] min-h-[28px] flex items-center justify-center transition-all duration-150 ${
         confirming
           ? 'text-[#ef4444] text-[10px] font-mono opacity-100'
-          : 'text-[#525252] text-base leading-none group-hover:text-[#737373] hover:text-[#ef4444]'
+          : 'text-[#888888] text-base leading-none group-hover:text-[#a0a0a0] hover:text-[#ef4444]'
       }`}
     >
       {confirming ? 'delete?' : '×'}

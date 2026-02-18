@@ -31,6 +31,8 @@ Admin/user separation deferred (single-tenant: owner = admin = user).
 
 When adding a new page: place in the correct route group. If public, also add path prefix to `PUBLIC_PATHS` in `proxy.ts`.
 
+When changing navigation targets (Links, redirects, EscapeBack), verify the destination is reachable from the same access tier. Public pages must not navigate to `(app)` routes.
+
 ## API Route Patterns
 
 - Auth check first: call `getUser()`, return 401 if missing

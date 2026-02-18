@@ -121,7 +121,7 @@ export default function CaptureForm() {
             onKeyDown={handleKeyDown}
             placeholder="URL or thought..."
             rows={1}
-            className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#525252] resize-none outline-none transition-colors duration-150 overflow-hidden"
+            className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#888888] resize-none outline-none transition-colors duration-150 overflow-hidden"
             required
           />
           <VoiceInput
@@ -141,7 +141,7 @@ export default function CaptureForm() {
             onKeyDown={handleKeyDown}
             placeholder="Why interesting? (optional)"
             rows={1}
-            className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#525252] resize-none outline-none transition-colors duration-150 overflow-hidden"
+            className="flex-1 bg-transparent border-l-2 border-l-transparent border border-transparent focus:border-white/10 focus:border-l-[var(--accent)] rounded px-3 py-2 font-mono text-sm text-[#e5e5e5] placeholder:text-[#888888] resize-none outline-none transition-colors duration-150 overflow-hidden"
           />
           <VoiceInput
             onStart={contextVoice.onStart}

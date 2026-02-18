@@ -86,7 +86,7 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
               e.target.style.height = e.target.scrollHeight + 'px';
             }}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border border-white/10 rounded px-3 py-2 font-mono text-sm text-[#737373] italic resize-none outline-none focus:border-white/20 transition-colors"
+            className="flex-1 bg-transparent border border-white/10 rounded px-3 py-2 font-mono text-sm text-[#a0a0a0] italic resize-none outline-none focus:border-white/20 transition-colors"
             rows={2}
           />
           <VoiceInput
@@ -104,11 +104,11 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
           </button>
           <button
             onClick={cancel}
-            className="px-3 py-1 text-[#737373] hover:text-[#e5e5e5] transition-colors"
+            className="px-3 py-1 text-[#a0a0a0] hover:text-[#e5e5e5] transition-colors"
           >
             cancel
           </button>
-          <span className="text-[#525252] self-center ml-auto">
+          <span className="text-[#888888] self-center ml-auto">
             esc cancel · cmd+enter save
           </span>
         </div>
@@ -122,14 +122,14 @@ export default function EditableCaptureContext({ signalId, initialValue }: Props
       onClick={() => setEditing(true)}
     >
       {saved ? (
-        <div className="text-sm text-[#737373] italic whitespace-pre-wrap inline">
+        <div className="text-sm text-[#a0a0a0] italic whitespace-pre-wrap inline">
           {saved}
-          <span className="ml-2 text-[#525252] opacity-0 group-hover/edit:opacity-100 transition-opacity text-xs">
+          <span className="ml-2 text-[#888888] opacity-0 group-hover/edit:opacity-100 transition-opacity text-xs">
             edit
           </span>
         </div>
       ) : (
-        <div className="text-xs text-[#525252] opacity-0 group-hover/edit:opacity-100 transition-opacity font-mono">
+        <div className="text-xs text-[#888888] opacity-0 group-hover/edit:opacity-100 transition-opacity font-mono">
           + add note
         </div>
       )}

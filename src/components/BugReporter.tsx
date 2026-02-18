@@ -34,7 +34,7 @@ export default function BugReporter() {
         className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 border border-white/[0.12] bg-[#141414]/90 backdrop-blur-sm rounded-full cursor-pointer transition-all duration-150 hover:border-[#3b82f6]/30 hover:bg-[#3b82f6]/[0.04] group"
       >
         <span className="block w-1.5 h-1.5 rounded-full bg-[#3b82f6] transition-shadow duration-150 group-hover:shadow-[0_0_6px_#3b82f6]" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#525252] transition-colors duration-150 group-hover:text-[#737373]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#888888] transition-colors duration-150 group-hover:text-[#a0a0a0]">
           report
         </span>
       </button>

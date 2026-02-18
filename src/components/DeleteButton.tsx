@@ -50,7 +50,7 @@ export default function DeleteButton({ id }: { id: string }) {
       className={`text-xs font-mono uppercase tracking-wider border px-3 py-1.5 transition-colors ${
         confirming
           ? 'text-[#ef4444] border-[#ef4444]/40 hover:bg-[#ef4444]/10'
-          : 'text-[#525252] border-white/[0.06] hover:text-[#737373] hover:border-white/10'
+          : 'text-[#888888] border-white/[0.06] hover:text-[#a0a0a0] hover:border-white/10'
       } disabled:opacity-50`}
     >
       {buttonLabel(deleting, confirming)}

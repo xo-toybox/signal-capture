@@ -43,8 +43,8 @@ export default function ArchiveButton({ signalId, isArchived, onChange }: Props)
       onClick={toggle}
       className={`px-1 transition-all duration-150 ${
         archived
-          ? 'text-[#737373] opacity-100'
-          : 'text-[#525252] group-hover:text-[#737373] hover:text-[#a3a3a3]'
+          ? 'text-[#a0a0a0] opacity-100'
+          : 'text-[#888888] group-hover:text-[#a0a0a0] hover:text-[#a3a3a3]'
       }`}
       aria-label={archived ? 'Unarchive signal' : 'Archive signal'}
     >

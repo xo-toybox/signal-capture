@@ -65,7 +65,13 @@ export default function SignalFeed({ initialSignals }: Props) {
 
   const fetchSignals = useCallback(async (currentOffset: number, currentFilter: FilterTab) => {
     if (!isConfigured) {
-      setSignals(MOCK_SIGNALS);
+      const filtered = MOCK_SIGNALS.filter(s => {
+        if (currentFilter === 'active') return !s.is_archived;
+        if (currentFilter === 'starred') return s.is_starred && !s.is_archived;
+        if (currentFilter === 'archived') return s.is_archived;
+        return true;
+      });
+      setSignals(filtered);
       setHasMore(false);
       setLoading(false);
       return;
@@ -339,7 +345,7 @@ export default function SignalFeed({ initialSignals }: Props) {
               className={`px-3 py-1 rounded transition-colors duration-150 ${
                 filter === tab.key
                   ? 'text-[#e5e5e5] bg-white/[0.06]'
-                  : 'text-[#525252] hover:text-[#737373]'
+                  : 'text-[#888888] hover:text-[#a0a0a0]'
               }`}
             >
               {tab.label}
@@ -354,7 +360,7 @@ export default function SignalFeed({ initialSignals }: Props) {
             className={`px-3 py-1 rounded font-mono text-xs transition-colors duration-150 ${
               selectMode
                 ? 'text-[#3b82f6] bg-[#3b82f6]/10'
-                : 'text-[#525252] hover:text-[#737373]'
+                : 'text-[#888888] hover:text-[#a0a0a0]'
             }`}
           >
             {selectMode ? 'Done' : 'Select'}
@@ -382,7 +388,7 @@ export default function SignalFeed({ initialSignals }: Props) {
                 className={`px-2.5 py-1 rounded-full border transition-all duration-150 ${
                   isActive
                     ? 'text-[#3b82f6] border-[#3b82f6]/30 bg-[#3b82f6]/10'
-                    : 'text-[#525252] border-white/[0.06] hover:text-[#737373] hover:border-white/10'
+                    : 'text-[#888888] border-white/[0.06] hover:text-[#a0a0a0] hover:border-white/10'
                 }`}
               >
                 {opt.label}
@@ -393,11 +399,11 @@ export default function SignalFeed({ initialSignals }: Props) {
       )}
 
       {loading ? (
-        <div className="py-8 text-center text-xs text-[#525252] font-mono">
+        <div className="py-8 text-center text-xs text-[#888888] font-mono">
           loading...
         </div>
       ) : signals.length === 0 ? (
-        <div className="py-12 text-center text-xs text-[#525252] font-mono">
+        <div className="py-12 text-center text-xs text-[#888888] font-mono">
           {EMPTY_MESSAGES[filter]}
         </div>
       ) : (
@@ -418,7 +424,7 @@ export default function SignalFeed({ initialSignals }: Props) {
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="px-4 py-1.5 text-xs font-mono text-[#737373] hover:text-[#e5e5e5] disabled:opacity-30 transition-colors duration-150"
+                className="px-4 py-1.5 text-xs font-mono text-[#a0a0a0] hover:text-[#e5e5e5] disabled:opacity-30 transition-colors duration-150"
               >
                 {loadingMore ? '...' : 'load more'}
               </button>

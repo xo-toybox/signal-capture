@@ -98,7 +98,7 @@ export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode
 
       {/* Right panel (archive) — revealed by swiping left — touch only */}
       <div
-        className="absolute inset-y-0 right-0 hidden pointer-coarse:flex items-center justify-center bg-white/5 text-[#737373]"
+        className="absolute inset-y-0 right-0 hidden pointer-coarse:flex items-center justify-center bg-white/5 text-[#a0a0a0]"
         style={{ width: PANEL_WIDTH }}
       >
         <span className="text-xs font-mono">

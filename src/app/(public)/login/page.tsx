@@ -43,7 +43,7 @@ function LoginContent() {
         <h1 className="text-lg font-mono text-[#e5e5e5] tracking-tight">
           Signal Capture
         </h1>
-        <p className="text-xs font-mono text-[#525252]">
+        <p className="text-xs font-mono text-[#888888]">
           authenticate to continue
         </p>
       </div>
