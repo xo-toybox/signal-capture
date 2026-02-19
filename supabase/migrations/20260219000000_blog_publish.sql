@@ -4,8 +4,10 @@ ALTER TABLE signals_raw ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_signals_raw_published ON signals_raw(is_published) WHERE is_published = true;
 
--- Recreate signals_feed view with new columns
-CREATE OR REPLACE VIEW signals_feed WITH (security_invoker = on) AS
+-- Must drop + recreate (can't reorder columns with CREATE OR REPLACE)
+DROP VIEW IF EXISTS signals_feed;
+
+CREATE VIEW signals_feed WITH (security_invoker = on) AS
 SELECT
   r.id, r.created_at, r.source_url, r.raw_input, r.capture_context,
   r.input_method, r.processing_status, r.processed_at,
