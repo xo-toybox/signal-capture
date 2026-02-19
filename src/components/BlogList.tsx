@@ -64,8 +64,6 @@ function BlogEntry({ signal, isOpen, onToggle }: { signal: SignalFeedItem; isOpe
 
 function BlogEntryDetail({ signal: s }: { signal: SignalFeedItem }) {
   const isEnriched = s.processing_status === 'complete' && s.key_claims;
-  const claims = safeArray(s.key_claims);
-  const tags = safeArray(s.domain_tags);
   const validatedSourceUrl = safeUrl(s.source_url);
 
   return (
@@ -75,7 +73,7 @@ function BlogEntryDetail({ signal: s }: { signal: SignalFeedItem }) {
         {s.raw_input}
       </div>
       {s.capture_context && (
-        <div className="mt-2 text-xs text-[#a0a0a0]">{s.capture_context}</div>
+        <div className="mt-2 text-xs text-[#a0a0a0] whitespace-pre-wrap">{s.capture_context}</div>
       )}
       {validatedSourceUrl && (
         <a
@@ -88,53 +86,74 @@ function BlogEntryDetail({ signal: s }: { signal: SignalFeedItem }) {
         </a>
       )}
 
-      {isEnriched && (
-        <>
-          {claims.length > 0 && (
-            <>
-              <SectionHeader label="Key Claims" />
-              <ul className="space-y-1.5">
-                {claims.map((claim, i) => (
-                  <li key={i} className="flex gap-2 text-sm font-mono">
-                    <span className="text-[#888888] flex-shrink-0">-</span>
-                    <span className="text-[#e5e5e5]">{claim}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+      {isEnriched && (() => {
+        const claims = safeArray(s.key_claims);
+        const tags = safeArray(s.domain_tags);
+        return (
+          <>
+            {claims.length > 0 && (
+              <>
+                <SectionHeader label="Key Claims" />
+                <ul className="space-y-1.5">
+                  {claims.map((claim, i) => (
+                    <li key={i} className="flex gap-2 text-sm font-mono">
+                      <span className="text-[#888888] flex-shrink-0">-</span>
+                      <span className="text-[#e5e5e5]">{claim}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
 
-          {s.novelty_assessment && (
-            <>
-              <SectionHeader label="Novelty" />
-              <p className="text-sm text-[#e5e5e5] leading-relaxed">{s.novelty_assessment}</p>
-            </>
-          )}
+            {s.novelty_assessment && (
+              <>
+                <SectionHeader label="Novelty" />
+                <p className="text-sm text-[#e5e5e5] leading-relaxed">{s.novelty_assessment}</p>
+              </>
+            )}
 
-          {tags.length > 0 && (
-            <>
-              <SectionHeader label="Tags" />
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-0.5 text-xs font-mono text-[#a0a0a0] border border-white/[0.06] rounded"
-                  >
-                    {tag}
+            {tags.length > 0 && (
+              <>
+                <SectionHeader label="Tags" />
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-0.5 text-xs font-mono text-[#a0a0a0] border border-white/[0.06] rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {s.cross_signal_notes && (
+              <>
+                <SectionHeader label="Cross-Signal Notes" />
+                <p className="text-sm text-[#e5e5e5] leading-relaxed">{s.cross_signal_notes}</p>
+              </>
+            )}
+
+            {s.confidence !== null && s.confidence !== undefined && (
+              <>
+                <SectionHeader label="Confidence" />
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#3b82f6] rounded-full"
+                      style={{ width: `${(s.confidence ?? 0) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-mono text-[#a0a0a0]">
+                    {((s.confidence ?? 0) * 100).toFixed(0)}%
                   </span>
-                ))}
-              </div>
-            </>
-          )}
-
-          {s.cross_signal_notes && (
-            <>
-              <SectionHeader label="Cross-Signal Notes" />
-              <p className="text-sm text-[#e5e5e5] leading-relaxed">{s.cross_signal_notes}</p>
-            </>
-          )}
-        </>
-      )}
+                </div>
+              </>
+            )}
+          </>
+        );
+      })()}
 
       {(s.human_note || s.human_rating) && (
         <>

@@ -5,6 +5,7 @@ import { MOCK_SIGNALS } from '@/lib/mock-data';
 import { safeArray, type SignalFeedItem } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import EscapeBack from '@/components/EscapeBack';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -70,7 +71,8 @@ export default async function BlogPost({
   const tags = safeArray(s.domain_tags);
 
   return (
-    <main className="pb-12">
+    <main className="pt-6 pb-12">
+      <EscapeBack href="/blog" />
       <Link
         href="/blog"
         className="text-xs font-mono text-[#a0a0a0] hover:text-[#e5e5e5] transition-colors"
@@ -84,38 +86,47 @@ export default async function BlogPost({
         </h1>
 
         <div className="flex items-center gap-2 mt-2 text-xs text-[#888888] font-mono">
-          {publishDate && <span>{publishDate}</span>}
-          {s.signal_type && (
+          {s.processing_status === 'complete' && (
+            <span className="text-[#22c55e]">enriched</span>
+          )}
+          {s.processing_status === 'pending' && (
+            <span className="text-[#f59e0b]">pending</span>
+          )}
+          {s.source_tier && (
             <>
-              {publishDate && <span className="text-white/10">|</span>}
-              <span>{s.signal_type.replace(/_/g, ' ')}</span>
+              <span className="text-white/10">|</span>
+              <span className="text-[#a0a0a0]">{s.source_tier}</span>
+            </>
+          )}
+          {s.frontier_status && s.frontier_status !== 'not_frontier' && (
+            <>
+              <span className="text-white/10">|</span>
+              <span className="text-[#a0a0a0]">{s.frontier_status}</span>
             </>
           )}
         </div>
-      </div>
 
-      {validatedSourceUrl && (
-        <>
-          <SectionHeader label="Source" />
-          <a
-            href={validatedSourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-mono text-[#3b82f6] hover:underline truncate block max-w-full"
-          >
-            {s.source_url}
-          </a>
-        </>
-      )}
+        <div className="text-xs text-[#888888] mt-1 font-mono">{publishDate}</div>
+      </div>
 
       <SectionHeader label="Raw Capture" />
       <div className="font-mono text-sm text-[#e5e5e5] whitespace-pre-wrap leading-relaxed">
         {s.raw_input}
       </div>
       {s.capture_context && (
-        <div className="mt-2 text-xs text-[#a0a0a0]">
+        <div className="mt-2 text-xs text-[#a0a0a0] whitespace-pre-wrap">
           {s.capture_context}
         </div>
+      )}
+      {validatedSourceUrl && (
+        <a
+          href={validatedSourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-2 text-xs font-mono text-[#3b82f6] hover:underline truncate max-w-full"
+        >
+          {s.source_url}
+        </a>
       )}
 
       {isEnriched && (() => {
@@ -169,9 +180,32 @@ export default async function BlogPost({
                 </p>
               </>
             )}
+
+            {s.confidence !== null && s.confidence !== undefined && (
+              <>
+                <SectionHeader label="Confidence" />
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#3b82f6] rounded-full"
+                      style={{ width: `${(s.confidence ?? 0) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-mono text-[#a0a0a0]">
+                    {((s.confidence ?? 0) * 100).toFixed(0)}%
+                  </span>
+                </div>
+              </>
+            )}
           </>
         );
       })()}
+
+      {!isEnriched && s.processing_status === 'pending' && (
+        <div className="mt-8 py-6 text-center text-xs text-[#888888] font-mono border-t border-white/[0.06]">
+          awaiting enrichment
+        </div>
+      )}
 
       {(s.human_note || s.human_rating) && (
         <>
