@@ -90,16 +90,26 @@ export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode
     <div className="relative overflow-hidden border-b border-white/5">
       {/* Left panel (star) — revealed by swiping right — touch only */}
       <div
-        className="absolute inset-y-0 left-0 hidden pointer-coarse:flex items-center justify-center bg-[#eab308]/20 text-[#eab308]"
+        className="absolute inset-y-0 left-0 hidden pointer-coarse:flex items-center justify-center bg-[#eab308]/20 text-[#eab308] cursor-pointer active:bg-[#eab308]/30"
         style={{ width: PANEL_WIDTH }}
+        onClick={() => {
+          onCommitRight();
+          swipe.close();
+          onOpenChange(null);
+        }}
       >
         <span className="text-xl">{signal.is_starred ? '\u2605' : '\u2606'}</span>
       </div>
 
       {/* Right panel (archive) — revealed by swiping left — touch only */}
       <div
-        className="absolute inset-y-0 right-0 hidden pointer-coarse:flex items-center justify-center bg-white/5 text-[#a0a0a0]"
+        className="absolute inset-y-0 right-0 hidden pointer-coarse:flex items-center justify-center bg-white/5 text-[#a0a0a0] cursor-pointer active:bg-white/10"
         style={{ width: PANEL_WIDTH }}
+        onClick={() => {
+          onCommitLeft();
+          swipe.close();
+          onOpenChange(null);
+        }}
       >
         <span className="text-xs font-mono">
           {signal.is_archived ? 'unarchive' : 'archive'}

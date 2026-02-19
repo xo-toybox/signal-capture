@@ -184,7 +184,7 @@ describe('useSwipe', () => {
       const onCommitLeft = vi.fn();
       const { result } = renderHook(() => useSwipe({ onCommitLeft }));
 
-      // Swipe more than 50% of card width (375 * 0.5 = 187.5)
+      // Swipe more than 30% of card width (375 * 0.3 = 112.5)
       swipeGesture(result.current.handlers, 300, 300 - 200);
 
       expect(onCommitLeft).toHaveBeenCalledOnce();

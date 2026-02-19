@@ -151,7 +151,7 @@ export function useSwipe({
 
       const dx = e.clientX - startXRef.current;
       const absDx = Math.abs(dx);
-      const commitThreshold = cardWidthRef.current * 0.5;
+      const commitThreshold = cardWidthRef.current * 0.3;
 
       setIsSwiping(false);
       setIsAnimating(true);
