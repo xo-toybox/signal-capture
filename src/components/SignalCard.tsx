@@ -91,6 +91,9 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
         <span className="hidden sm:inline-flex">
           <ArchiveButton signalId={signal.id} isArchived={signal.is_archived} />
         </span>
+        {signal.is_published && (
+          <span className="text-[#22c55e] text-[10px] leading-none" aria-label="Published">●</span>
+        )}
         <span className="text-xs text-[#888888] font-mono sm:pl-0">
           {relativeTime(signal.created_at)}
         </span>

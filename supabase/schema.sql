@@ -27,7 +27,9 @@ CREATE TABLE signals_raw (
 
   fetched_title TEXT,
   is_starred BOOLEAN NOT NULL DEFAULT false,
-  is_archived BOOLEAN NOT NULL DEFAULT false
+  is_archived BOOLEAN NOT NULL DEFAULT false,
+  is_published BOOLEAN NOT NULL DEFAULT false,
+  published_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_signals_raw_status ON signals_raw(processing_status)
@@ -35,6 +37,7 @@ CREATE INDEX idx_signals_raw_status ON signals_raw(processing_status)
 CREATE INDEX idx_signals_raw_created ON signals_raw(created_at DESC);
 CREATE INDEX idx_signals_raw_starred ON signals_raw(is_starred) WHERE is_starred = true;
 CREATE INDEX idx_signals_raw_archived ON signals_raw(is_archived) WHERE is_archived = true;
+CREATE INDEX idx_signals_raw_published ON signals_raw(is_published) WHERE is_published = true;
 
 
 -- ============================================================
@@ -149,7 +152,7 @@ CREATE VIEW signals_feed WITH (security_invoker = on) AS
 SELECT
   r.id, r.created_at, r.source_url, r.raw_input, r.capture_context,
   r.input_method, r.processing_status, r.processed_at,
-  r.fetched_title, r.is_starred, r.is_archived,
+  r.fetched_title, r.is_starred, r.is_archived, r.is_published, r.published_at,
   e.source_title, e.key_claims, e.novelty_assessment, e.domain_tags,
   e.signal_type, e.source_tier, e.frontier_status, e.confidence,
   e.cross_signal_notes,

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Public routes — mirrors (public) route group in src/app/
 // Update both when adding new public pages.
-const PUBLIC_PATHS = ['/login', '/docs', '/api/auth'];
+const PUBLIC_PATHS = ['/login', '/docs', '/blog', '/api/auth'];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

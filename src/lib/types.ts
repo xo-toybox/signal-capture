@@ -39,6 +39,8 @@ export interface SignalRaw {
   fetched_title: string | null;
   is_starred: boolean;
   is_archived: boolean;
+  is_published: boolean;
+  published_at: string | null;
 }
 
 export interface SignalFeedItem {
@@ -53,6 +55,8 @@ export interface SignalFeedItem {
   fetched_title: string | null;
   is_starred: boolean;
   is_archived: boolean;
+  is_published: boolean;
+  published_at: string | null;
   // Project link (null if unlinked)
   project_id: string | null;
   project_name: string | null;

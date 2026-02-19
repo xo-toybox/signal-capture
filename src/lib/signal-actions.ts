@@ -28,3 +28,12 @@ export async function toggleArchive(
   await patchSignal(signalId, 'is_archived', next);
   return next;
 }
+
+export async function togglePublish(
+  signalId: string,
+  currentValue: boolean,
+): Promise<boolean> {
+  const next = !currentValue;
+  await patchSignal(signalId, 'is_published', next);
+  return next;
+}

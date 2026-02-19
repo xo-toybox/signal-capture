@@ -11,11 +11,12 @@ import type { SignalFeedItem } from '@/lib/types';
 
 const PAGE_SIZE = 20;
 
-type FilterTab = 'active' | 'starred' | 'archived' | 'all';
+type FilterTab = 'active' | 'starred' | 'published' | 'archived' | 'all';
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
   { key: 'active', label: 'Active' },
   { key: 'starred', label: 'Starred' },
+  { key: 'published', label: 'Published' },
   { key: 'archived', label: 'Archived' },
   { key: 'all', label: 'All' },
 ];
@@ -23,6 +24,7 @@ const FILTER_TABS: { key: FilterTab; label: string }[] = [
 const EMPTY_MESSAGES: Record<FilterTab, string> = {
   active: 'no signals yet',
   starred: 'no starred signals',
+  published: 'no published signals',
   archived: 'no archived signals',
   all: 'no signals yet',
 };
@@ -31,6 +33,7 @@ const NULL_ENRICHMENT: Partial<SignalFeedItem> = {
   fetched_title: null,
   is_starred: false,
   is_archived: false,
+  is_published: false,
   project_id: null,
   project_name: null,
   source_title: null,
@@ -68,8 +71,9 @@ export default function SignalFeed({ initialSignals }: Props) {
   const fetchSignals = useCallback(async (currentOffset: number, currentFilter: FilterTab) => {
     if (!isConfigured) {
       const filtered = MOCK_SIGNALS.filter(s => {
-        if (currentFilter === 'active') return !s.is_archived;
-        if (currentFilter === 'starred') return s.is_starred && !s.is_archived;
+        if (currentFilter === 'active') return !s.is_archived && !s.is_published;
+        if (currentFilter === 'starred') return s.is_starred && !s.is_archived && !s.is_published;
+        if (currentFilter === 'published') return s.is_published;
         if (currentFilter === 'archived') return s.is_archived;
         return true;
       });
@@ -123,6 +127,7 @@ export default function SignalFeed({ initialSignals }: Props) {
       // Only add to feed if it matches current filter
       if (filter === 'archived') return; // new signals aren't archived
       if (filter === 'starred') return; // new signals aren't starred
+      if (filter === 'published') return; // new signals aren't published
       setSignals(prev =>
         prev.some(s => s.id === newSignal.id) ? prev : [newSignal, ...prev]
       );
@@ -148,7 +153,7 @@ export default function SignalFeed({ initialSignals }: Props) {
             ...NULL_ENRICHMENT,
           };
           // Only add if matches current filter
-          if (filter === 'archived' || filter === 'starred') return;
+          if (filter === 'archived' || filter === 'starred' || filter === 'published') return;
           setSignals(prev =>
             prev.some(s => s.id === newSignal.id) ? prev : [newSignal, ...prev]
           );
@@ -162,8 +167,9 @@ export default function SignalFeed({ initialSignals }: Props) {
           setSignals(prev => prev
             .map(s => s.id === updated.id ? { ...s, ...updated } : s)
             .filter(s => {
-              if (filter === 'active' && s.is_archived) return false;
-              if (filter === 'starred' && (!s.is_starred || s.is_archived)) return false;
+              if (filter === 'active' && (s.is_archived || s.is_published)) return false;
+              if (filter === 'starred' && (!s.is_starred || s.is_archived || s.is_published)) return false;
+              if (filter === 'published' && !s.is_published) return false;
               if (filter === 'archived' && !s.is_archived) return false;
               return true;
             }),

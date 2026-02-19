@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { safeArray, type SignalFeedItem } from '@/lib/types';
 import DeleteButton from '@/components/DeleteButton';
 import EditableCaptureContext from '@/components/EditableCaptureContext';
+import EditableTitle from '@/components/EditableTitle';
 import StarButton from '@/components/StarButton';
 import ArchiveButton from '@/components/ArchiveButton';
+import PublishButton from '@/components/PublishButton';
 import { STATUS_LABELS, STATUS_TEXT_COLORS } from '@/lib/constants';
 import EscapeBack from '@/components/EscapeBack';
 import ProjectLinker from '@/components/ProjectLinker';
@@ -97,19 +99,17 @@ export default async function SignalDetail({
       </Link>
 
       <div className="mt-4">
-        {(() => {
-          const displayTitle = s.source_title ?? s.fetched_title;
-          const title = displayTitle ?? (s.raw_input.length > 100 ? s.raw_input.slice(0, 100) + '...' : s.raw_input);
-          return (
-            <h1 className={`text-lg text-[#e5e5e5] leading-tight${displayTitle ? '' : ' font-mono'}`}>
-              {title}
-            </h1>
-          );
-        })()}
+        <EditableTitle
+          signalId={s.id}
+          initialTitle={s.source_title ?? s.fetched_title ?? null}
+          fallbackTitle={s.raw_input.length > 100 ? s.raw_input.slice(0, 100) + '...' : s.raw_input}
+          isFallback={!s.source_title && !s.fetched_title}
+        />
 
         <div className="group flex items-center gap-2 mt-2 text-xs">
           <StarButton signalId={s.id} isStarred={s.is_starred} />
           <ArchiveButton signalId={s.id} isArchived={s.is_archived} />
+          <PublishButton signalId={s.id} isPublished={s.is_published} />
           <span className="text-white/10">|</span>
           <span className={STATUS_TEXT_COLORS[s.processing_status]}>
             {STATUS_LABELS[s.processing_status]}

@@ -97,7 +97,7 @@ export async function DELETE(request: NextRequest) {
   return Response.json({ deleted: id });
 }
 
-const PATCHABLE_FIELDS = new Set(['capture_context', 'is_starred', 'is_archived', 'project_id']);
+const PATCHABLE_FIELDS = new Set(['capture_context', 'source_title', 'is_starred', 'is_archived', 'is_published', 'project_id']);
 
 export async function PATCH(request: NextRequest) {
   const user = await getUser();
@@ -129,11 +129,20 @@ export async function PATCH(request: NextRequest) {
       ? body.capture_context.trim().slice(0, 5000) || null
       : null;
   }
+  if ('source_title' in body) {
+    updates.source_title = typeof body.source_title === 'string'
+      ? body.source_title.trim().slice(0, 500) || null
+      : null;
+  }
   if ('is_starred' in body) {
     updates.is_starred = !!body.is_starred;
   }
   if ('is_archived' in body) {
     updates.is_archived = !!body.is_archived;
+  }
+  if ('is_published' in body) {
+    updates.is_published = !!body.is_published;
+    updates.published_at = body.is_published ? new Date().toISOString() : null;
   }
   if ('project_id' in body) {
     // null to unlink, string UUID to link
@@ -195,6 +204,7 @@ export async function GET(request: NextRequest) {
       .from('signals_raw')
       .update({ is_archived: true })
       .eq('is_archived', false)
+      .eq('is_published', false)
       .lt('created_at', cutoff)
       .then(({ error }: { error: unknown }) => {
         if (error) console.error('auto-archive error:', error);
@@ -206,16 +216,19 @@ export async function GET(request: NextRequest) {
     .select('*');
 
   if (filter === 'active') {
-    query = query.eq('is_archived', false);
+    query = query.eq('is_archived', false).eq('is_published', false);
   } else if (filter === 'starred') {
-    query = query.eq('is_starred', true).eq('is_archived', false);
+    query = query.eq('is_starred', true).eq('is_archived', false).eq('is_published', false);
+  } else if (filter === 'published') {
+    query = query.eq('is_published', true);
   } else if (filter === 'archived') {
     query = query.eq('is_archived', true);
   }
   // 'all' — no filter
 
+  const orderCol = filter === 'published' ? 'published_at' : 'created_at';
   const { data, error } = await query
-    .order('created_at', { ascending: false })
+    .order(orderCol, { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) {

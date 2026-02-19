@@ -4,10 +4,25 @@ export default function ExternalLinks() {
   return (
     <div className="flex items-center gap-4">
       <Link
+        href="/blog"
+        title="Blog"
+        aria-label="Blog"
+        className="text-[#888888] hover:text-[#a0a0a0] transition-colors p-3 -m-3"
+      >
+        {/* RSS — blog feed */}
+        <svg viewBox="0 0 16 16" fill="currentColor" className="w-5 h-5">
+          <circle cx="3" cy="13" r="2" />
+          <path d="M1 1a14 14 0 0 1 14 14h-3A11 11 0 0 0 1 4V1Z" />
+          <path d="M1 6a9 9 0 0 1 9 9H7A6 6 0 0 0 1 9V6Z" />
+        </svg>
+      </Link>
+      <Link
         href="/docs"
+        title="Documentation"
         aria-label="Documentation"
         className="text-[#888888] hover:text-[#a0a0a0] transition-colors p-3 -m-3"
       >
+        {/* Open book — documentation */}
         <svg viewBox="0 0 16 16" fill="currentColor" className="w-5 h-5">
           <path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.744 3.744 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z" />
         </svg>
@@ -16,6 +31,7 @@ export default function ExternalLinks() {
         href="https://github.com/xo-toybox/signal-capture"
         target="_blank"
         rel="noopener noreferrer"
+        title="GitHub"
         aria-label="GitHub repository"
         className="text-[#888888] hover:text-[#a0a0a0] transition-colors p-3 -m-3"
       >
