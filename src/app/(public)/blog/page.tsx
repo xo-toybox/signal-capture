@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServiceClient, isConfigured } from '@/lib/supabase-server';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
 import type { SignalFeedItem } from '@/lib/types';
