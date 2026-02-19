@@ -9,6 +9,7 @@ import StarButton from '@/components/StarButton';
 import ArchiveButton from '@/components/ArchiveButton';
 import { STATUS_LABELS, STATUS_TEXT_COLORS } from '@/lib/constants';
 import EscapeBack from '@/components/EscapeBack';
+import ProjectLinker from '@/components/ProjectLinker';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -128,6 +129,14 @@ export default async function SignalDetail({
         </div>
 
         <div className="text-xs text-[#888888] mt-1 font-mono">{capturedAt}</div>
+      </div>
+
+      <div className="mt-4">
+        <ProjectLinker
+          signalId={s.id}
+          currentProjectId={s.project_id ?? null}
+          currentProjectName={s.project_name ?? null}
+        />
       </div>
 
       <SectionHeader label="Raw Capture" />

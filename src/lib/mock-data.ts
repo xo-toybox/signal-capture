@@ -1,8 +1,73 @@
-import type { SignalFeedItem } from './types';
+import type { SignalFeedItem, Project, ProjectThought } from './types';
 
 const now = Date.now();
 const hour = 3600000;
 const day = 86400000;
+
+export const MOCK_PROJECTS: Project[] = [
+  {
+    id: 'mock-proj-1',
+    name: 'Agent Architectures',
+    description: 'Multi-agent coordination patterns, memory systems, orchestration',
+    layer: 'strategic',
+    created_at: new Date(now - 7 * day).toISOString(),
+    updated_at: new Date(now - 1 * hour).toISOString(),
+  },
+  {
+    id: 'mock-proj-2',
+    name: 'Signal Capture v2',
+    description: 'Enrichment pipeline, project linking, export improvements',
+    layer: 'tactical',
+    created_at: new Date(now - 3 * day).toISOString(),
+    updated_at: new Date(now - 2 * hour).toISOString(),
+  },
+  {
+    id: 'mock-proj-3',
+    name: 'Quantum Computing Reading',
+    description: null,
+    layer: 'hibernating',
+    created_at: new Date(now - 14 * day).toISOString(),
+    updated_at: new Date(now - 10 * day).toISOString(),
+  },
+];
+
+export const MOCK_THOUGHTS: ProjectThought[] = [
+  {
+    id: 'mock-thought-1',
+    project_id: 'mock-proj-1',
+    content: 'Cursor experiment confirms hierarchical orchestration beats flat swarms at scale — need to map this against MAST taxonomy failure modes',
+    created_at: new Date(now - 1 * hour).toISOString(),
+    updated_at: new Date(now - 1 * hour).toISOString(),
+  },
+  {
+    id: 'mock-thought-2',
+    project_id: 'mock-proj-1',
+    content: 'Ralph Loop memory architecture is promising for agent persistence. Key insight: separate raw logs from curated knowledge, automate consolidation.',
+    created_at: new Date(now - 1 * day).toISOString(),
+    updated_at: new Date(now - 1 * day).toISOString(),
+  },
+  {
+    id: 'mock-thought-3',
+    project_id: 'mock-proj-1',
+    content: 'World models vs word models framing crystallizes the core limitation — current architectures optimize for token prediction, not strategic reasoning. Need new primitives.',
+    created_at: new Date(now - 3 * day).toISOString(),
+    updated_at: new Date(now - 3 * day).toISOString(),
+  },
+  {
+    id: 'mock-thought-4',
+    project_id: 'mock-proj-2',
+    content: 'Projects feature scoped — 3 layers (tactical/strategic/hibernating), freeform thoughts as primary content, post-capture signal linking.',
+    created_at: new Date(now - 2 * hour).toISOString(),
+    updated_at: new Date(now - 2 * hour).toISOString(),
+  },
+  {
+    id: 'mock-thought-5',
+    project_id: 'mock-proj-2',
+    content: 'CaptureForm stays untouched — linking happens from project detail page or signal detail page. No capture-time friction.',
+    created_at: new Date(now - 1 * day).toISOString(),
+    updated_at: new Date(now - 1 * day).toISOString(),
+  },
+];
 
 export const MOCK_SIGNALS: SignalFeedItem[] = [
   {
@@ -17,6 +82,8 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     fetched_title: null,
     is_starred: false,
     is_archived: false,
+    project_id: 'mock-proj-1',
+    project_name: 'Agent Architectures',
     source_title: null,
     key_claims: null,
     novelty_assessment: null,
@@ -42,6 +109,8 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     fetched_title: null,
     is_starred: true,
     is_archived: false,
+    project_id: 'mock-proj-1',
+    project_name: 'Agent Architectures',
     source_title: 'Ralph Loop: Session Memory Architecture',
     key_claims: [
       'Workspace files provide persistent context across agent session restarts',
@@ -72,6 +141,8 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     fetched_title: null,
     is_starred: false,
     is_archived: false,
+    project_id: null,
+    project_name: null,
     source_title: null,
     key_claims: null,
     novelty_assessment: null,
@@ -97,6 +168,8 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     fetched_title: null,
     is_starred: false,
     is_archived: true,
+    project_id: null,
+    project_name: null,
     source_title: null,
     key_claims: null,
     novelty_assessment: null,
@@ -122,6 +195,8 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     fetched_title: null,
     is_starred: true,
     is_archived: false,
+    project_id: null,
+    project_name: null,
     source_title: 'World Models vs Word Models: The Architecture Gap',
     key_claims: [
       'LLMs generate probable next tokens (word models) but lack strategic reasoning about other agents and hidden state (world models)',
@@ -151,6 +226,8 @@ export const MOCK_SIGNALS: SignalFeedItem[] = [
     fetched_title: null,
     is_starred: false,
     is_archived: false,
+    project_id: null,
+    project_name: null,
     source_title: 'Monty: Rust-Based Python Sandbox for LLM Code Execution',
     key_claims: [
       'Microsecond startup vs seconds for traditional Python interpreters',

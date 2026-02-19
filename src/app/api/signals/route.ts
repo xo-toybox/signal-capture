@@ -97,7 +97,7 @@ export async function DELETE(request: NextRequest) {
   return Response.json({ deleted: id });
 }
 
-const PATCHABLE_FIELDS = new Set(['capture_context', 'is_starred', 'is_archived']);
+const PATCHABLE_FIELDS = new Set(['capture_context', 'is_starred', 'is_archived', 'project_id']);
 
 export async function PATCH(request: NextRequest) {
   const user = await getUser();
@@ -134,6 +134,16 @@ export async function PATCH(request: NextRequest) {
   }
   if ('is_archived' in body) {
     updates.is_archived = !!body.is_archived;
+  }
+  if ('project_id' in body) {
+    // null to unlink, string UUID to link
+    if (body.project_id === null) {
+      updates.project_id = null;
+    } else if (typeof body.project_id === 'string' && (UUID_RE.test(body.project_id) || body.project_id.startsWith('mock-'))) {
+      updates.project_id = body.project_id;
+    } else {
+      return Response.json({ error: 'project_id must be a valid UUID or null' }, { status: 400 });
+    }
   }
 
   if (Object.keys(updates).length === 0) {

@@ -42,6 +42,14 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
               {signal.source_title}
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-[#a0a0a0]">
+              {signal.project_name && (
+                <>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#3b82f6]/10 text-[#3b82f6]">
+                    {signal.project_name}
+                  </span>
+                  <span className="text-white/10">|</span>
+                </>
+              )}
               {claimCount > 0 && (
                 <span>{claimCount} claim{claimCount !== 1 ? 's' : ''}</span>
               )}
@@ -60,11 +68,18 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
             <div className={`text-sm ${displayTitle ? '' : 'font-mono'} text-[#e5e5e5] line-clamp-2`}>
               {displayTitle ?? signal.raw_input}
             </div>
-            {signal.capture_context && (
-              <div className="text-xs text-[#a0a0a0] mt-1 truncate">
-                {signal.capture_context}
-              </div>
-            )}
+            <div className="flex items-center gap-2 mt-1">
+              {signal.project_name && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#3b82f6]/10 text-[#3b82f6]">
+                  {signal.project_name}
+                </span>
+              )}
+              {signal.capture_context && (
+                <span className="text-xs text-[#a0a0a0] truncate">
+                  {signal.capture_context}
+                </span>
+              )}
+            </div>
           </>
         )}
       </div>

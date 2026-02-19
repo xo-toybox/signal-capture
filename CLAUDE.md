@@ -24,7 +24,7 @@ Two tiers, enforced by `proxy.ts` + route groups:
 | Tier | Route group | Paths | Notes |
 |---|---|---|---|
 | Public | `(public)` | `/login`, `/docs/*` | No auth, no BugReporter |
-| Authenticated | `(app)` | `/`, `/signal/*` | Google OAuth + `ALLOWED_EMAIL` |
+| Authenticated | `(app)` | `/`, `/signal/*`, `/projects/*` | Google OAuth + `ALLOWED_EMAIL` |
 
 API routes live outside groups — auth via proxy + route-level `getUser()`.
 Admin/user separation deferred (single-tenant: owner = admin = user).

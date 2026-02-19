@@ -1,6 +1,6 @@
 ---
-commit: 0110585
-date: 2026-02-17
+commit: dea028b
+date: 2026-02-18
 topic: makefile-workflows
 ---
 

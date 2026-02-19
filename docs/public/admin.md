@@ -1,6 +1,6 @@
 ---
-commit: 0110585
-date: 2026-02-17
+commit: dea028b
+date: 2026-02-18
 topic: admin
 living: true
 ---
@@ -16,6 +16,8 @@ Things the app operator needs to know that aren't obvious from the UI.
 Bottom-sheet modal triggered by the pill button in the bottom-right corner. Toggle between Bug and Feature mode, pick a severity for bugs, and type a title and description. Environment context (URL, viewport, user agent, console errors) is captured automatically. Posts to GitHub Issues via `/api/report`.
 
 `Cmd+Enter` (`Ctrl+Enter` on Windows) submits from anywhere in the modal. Escape or tapping outside closes it.
+
+The ✦ toggle assigns the issue to Claude by adding a `claude` label. On by default for bugs, off for features.
 
 Requires `GITHUB_TOKEN` and `GITHUB_REPO` env vars. If they're missing, the reporter shows "not configured" — the rest of the app works fine. Rate-limited to 10 reports per hour.
 
@@ -33,5 +35,5 @@ The installed PWA has no address bar or browser refresh button. `Cmd+R` (`Ctrl+R
 
 | Shortcut | Where | Action |
 |----------|-------|--------|
-| `Escape` | Signal detail, docs pages | Navigate back |
-| `Cmd/Ctrl+Enter` | Capture form, bug reporter | Submit |
+| `Escape` | Signal detail, project detail, docs pages | Navigate back |
+| `Cmd/Ctrl+Enter` | Capture form, bug reporter, thought input | Submit |

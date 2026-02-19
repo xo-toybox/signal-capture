@@ -1,6 +1,6 @@
 ---
-commit: 0110585
-date: 2026-02-17
+commit: dea028b
+date: 2026-02-18
 topic: features
 living: true
 ---
@@ -22,6 +22,7 @@ The home view: capture form at top, filterable signal list below.
 - **Status indicators** — colored left border per signal: yellow (pending), blue (processing), green (complete), red (dismissed/failed)
 - **Enrichment preview** — enriched signals show claim count and up to 3 domain tags inline
 - **Auto-archive** — signals older than 30 days automatically leave the Active view
+- **Project badge** — signals linked to a project show a blue pill with the project name
 
 ![Feed — desktop](screenshots/01-feed-desktop.png)
 
@@ -48,6 +49,7 @@ Full view of a single signal with all enrichment data.
 - **Confidence** — visual progress bar (0–100%)
 - **Human Notes** — manual rating (1–5) and annotations
 - **Metadata** — source tier, frontier status, signal type
+- **Project linking** — link a signal to a project via a dropdown of all projects; change or unlink at any time
 
 ![Detail — enriched signal](screenshots/03-detail-enriched.png)
 
@@ -72,6 +74,37 @@ Select multiple signals and export them as combined markdown.
 - **Time-range chips** (Today, 7d, 30d, All) to quickly select signals by date
 - **Keyboard shortcuts** — `Cmd/Ctrl+A` to select all, `Cmd/Ctrl+C` to copy markdown, `Enter` to preview, `Escape` to exit
 - **Export preview** — two-tab modal showing rendered markdown and raw code, with copy button
+
+## Projects
+
+A parallel workspace for reflective thinking, organized by workstream. Two peer tabs in the header — **Signals** for fast capture, **Projects** for synthesis and planning.
+
+### Projects List (`/projects`)
+
+All projects grouped by lifecycle layer:
+
+- **Tactical** — narrow, active, current focus (shown first)
+- **Strategic** — broad themes, ongoing tracking
+- **Hibernating** — paused, revisit later (collapsed by default)
+
+Each project card shows thought and linked-signal counts. Create new projects inline from the list.
+
+### Project Detail (`/projects/[id]`)
+
+Full view of a single project:
+
+- **Thoughts** — timestamped freeform text entries, newest-first. Add new thoughts inline with `Cmd/Ctrl+Enter` to submit.
+- **Linked Signals** — signals associated with this project, rendered as compact signal cards. Unlink with the × button.
+- **Layer dropdown** — promote or demote a project between tactical, strategic, and hibernating.
+
+### Signal–Project Linking
+
+Signals are captured into the flat feed as usual (no capture-time friction). Link them to a project afterward:
+
+- From **signal detail** — click "+ Link to project" and pick from the dropdown
+- From **project detail** — linked signals are listed with an unlink button
+
+A signal belongs to zero or one project. Linked signals show a blue project badge in the feed.
 
 ## PWA
 

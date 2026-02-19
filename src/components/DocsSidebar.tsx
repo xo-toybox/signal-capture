@@ -54,7 +54,7 @@ export default function DocsSidebar({ docs }: { docs: DocMeta[] }) {
       className="min-h-11 min-w-11 flex items-center justify-center text-[#888888] hover:text-[#e5e5e5] transition-colors"
       aria-label={open ? 'Close docs panel' : 'Open docs panel'}
     >
-      <svg viewBox="0 0 16 16" fill="currentColor" className="w-[18px] h-[18px]">
+      <svg viewBox="0 0 16 16" fill="currentColor" className="w-5 h-5">
         <path d="M2.75 2A1.75 1.75 0 0 0 1 3.75v8.5c0 .966.784 1.75 1.75 1.75h10.5A1.75 1.75 0 0 0 15 12.25v-8.5A1.75 1.75 0 0 0 13.25 2ZM2.5 3.75a.25.25 0 0 1 .25-.25H10v9H2.75a.25.25 0 0 1-.25-.25Zm9 8.75V3.5h1.75a.25.25 0 0 1 .25.25v8.5a.25.25 0 0 1-.25.25Z" />
       </svg>
     </button>

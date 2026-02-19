@@ -1,6 +1,6 @@
 ---
-commit: 0110585
-date: 2026-02-17
+commit: dea028b
+date: 2026-02-18
 topic: capture-workflows
 living: true
 ---
@@ -30,3 +30,5 @@ Put anything in the content box — a URL, a thought, a half-formed idea — and
 ## After capture
 
 Your signal appears in the feed. If you captured a link, the system automatically fills in a title. From there: star it, archive it, or tap through to the detail view. On mobile, swipe right to star and swipe left to archive.
+
+To organize a signal into a project, open its detail view and click "+ Link to project." You can also view and manage linked signals from the project detail page under the Projects tab.

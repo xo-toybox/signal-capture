@@ -1,3 +1,22 @@
+export type ProjectLayer = 'tactical' | 'strategic' | 'hibernating';
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  layer: ProjectLayer;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectThought {
+  id: string;
+  project_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type ProcessingStatus =
   | 'pending'
   | 'processing'
@@ -34,6 +53,9 @@ export interface SignalFeedItem {
   fetched_title: string | null;
   is_starred: boolean;
   is_archived: boolean;
+  // Project link (null if unlinked)
+  project_id: string | null;
+  project_name: string | null;
   // Enrichment (null if not enriched)
   source_title: string | null;
   key_claims: string[] | null;
