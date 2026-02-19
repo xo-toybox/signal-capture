@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help dev dev-mobile dev-docker dev-browse dev-browse-docker setup test test-e2e test-e2e-headed test-e2e-ui test-e2e-report test-e2e-install typecheck lint check build clean nuke db-push db-reset _ensure-docker _ensure-supabase _ensure-unlinked
+.PHONY: help dev dev-mobile dev-docker dev-browse dev-browse-docker setup test test-e2e test-e2e-headed test-e2e-ui test-e2e-report test-e2e-install typecheck lint check build icons clean nuke db-push db-reset _ensure-docker _ensure-supabase _ensure-unlinked
 
 ifdef SPEC
   PLAYWRIGHT_SPEC := tests/e2e/$(SPEC).spec.ts
@@ -95,6 +95,10 @@ db-push: ## Show instructions for applying schema
 db-reset: _ensure-supabase _ensure-unlinked ## Reset local database with seed data
 	echo y | supabase db reset --local && \
 	psql "$$(supabase status -o json | jq -r .DB_URL)" < .dev-docker/seed-local.sql
+
+icons: ## Regenerate PWA icons from src/app/icon.svg
+	rsvg-convert -w 192 -h 192 src/app/icon.svg -o public/icons/icon-192.png
+	rsvg-convert -w 512 -h 512 src/app/icon.svg -o public/icons/icon-512.png
 
 clean: ## Remove build artifacts
 	rm -rf .next .next-* .coverage .test-results .tsbuildinfo
