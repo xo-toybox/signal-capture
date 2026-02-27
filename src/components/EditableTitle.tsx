@@ -52,6 +52,15 @@ export default function EditableTitle({ signalId, initialTitle, fallbackTitle, i
     setEditing(false);
   }, [saved]);
 
+  // Ghost text: show remainder of suggestion when typed value is a prefix
+  const suggestion = saved ?? fallbackTitle;
+  const ghostSuffix =
+    value.length > 0 && suggestion.toLowerCase().startsWith(value.toLowerCase())
+      ? suggestion.slice(value.length)
+      : value.length === 0
+        ? suggestion
+        : '';
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       e.stopPropagation();
@@ -60,8 +69,18 @@ export default function EditableTitle({ signalId, initialTitle, fallbackTitle, i
     } else if (e.key === 'Enter') {
       e.preventDefault();
       save();
+    } else if (e.key === 'Tab' && ghostSuffix) {
+      e.preventDefault();
+      const completed = value + ghostSuffix;
+      setValue(completed);
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          const len = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
+      });
     }
-  }, [cancel, save]);
+  }, [cancel, save, ghostSuffix, value]);
 
   const displayTitle = saved ?? fallbackTitle;
   const showAsFallback = saved === null && isFallback;
@@ -69,16 +88,26 @@ export default function EditableTitle({ signalId, initialTitle, fallbackTitle, i
   if (editing) {
     return (
       <div className="space-y-1.5">
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={fallbackTitle}
-          maxLength={500}
-          className="w-full bg-transparent border border-white/10 rounded px-2 py-1 text-lg text-[#e5e5e5] leading-tight outline-none focus:border-white/20 transition-colors"
-        />
+        <div className="relative">
+          {ghostSuffix && (
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none flex items-center px-2 py-1 text-lg leading-tight overflow-hidden whitespace-nowrap"
+            >
+              <span className="invisible">{value}</span>
+              <span className="text-[#666666]">{ghostSuffix}</span>
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            maxLength={500}
+            className="relative w-full bg-transparent border border-white/10 rounded px-2 py-1 text-lg text-[#e5e5e5] leading-tight outline-none focus:border-white/20 transition-colors"
+          />
+        </div>
         <div className="flex gap-2 text-xs font-mono">
           <button
             onClick={save}
@@ -94,7 +123,7 @@ export default function EditableTitle({ signalId, initialTitle, fallbackTitle, i
             cancel
           </button>
           <span className="text-[#888888] self-center ml-auto">
-            esc cancel · enter save
+            tab complete · esc cancel · enter save
           </span>
         </div>
       </div>

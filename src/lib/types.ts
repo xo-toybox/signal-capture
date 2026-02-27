@@ -41,6 +41,7 @@ export interface SignalRaw {
   is_archived: boolean;
   is_published: boolean;
   published_at: string | null;
+  edited_at: string | null;
 }
 
 export interface SignalFeedItem {
@@ -57,6 +58,7 @@ export interface SignalFeedItem {
   is_archived: boolean;
   is_published: boolean;
   published_at: string | null;
+  edited_at: string | null;
   // Project link (null if unlinked)
   project_id: string | null;
   project_name: string | null;

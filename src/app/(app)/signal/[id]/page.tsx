@@ -128,7 +128,19 @@ export default async function SignalDetail({
           )}
         </div>
 
-        <div className="text-xs text-[#888888] mt-1 font-mono">{capturedAt}</div>
+        <div className="text-xs text-[#888888] mt-1 font-mono">
+          {capturedAt}
+          {s.edited_at && (() => {
+            const editedDate = new Date(s.edited_at);
+            const createdDate = new Date(s.created_at);
+            const sameDay = editedDate.toDateString() === createdDate.toDateString();
+            return (
+              <span className="ml-2 text-[#666666]">
+                · edited{!sameDay && ` ${editedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`}
+              </span>
+            );
+          })()}
+        </div>
       </div>
 
       <div className="mt-4">
@@ -249,7 +261,7 @@ export default async function SignalDetail({
       )}
 
       <div className="mt-10 pt-6 border-t border-white/[0.06]">
-        <DeleteButton id={s.id} />
+        <DeleteButton id={s.id} rawInput={s.raw_input} sourceUrl={s.source_url} />
       </div>
     </main>
   );

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { isConfigured } from '@/lib/supabase';
 import { useVoiceInsert } from '@/lib/use-voice-insert';
+import { useToast } from '@/lib/use-toast';
 import VoiceInput from './VoiceInput';
 import type { InputMethod } from '@/lib/types';
 
@@ -12,7 +13,7 @@ export default function CaptureForm() {
   const [captureContext, setCaptureContext] = useState('');
   const [inputMethod, setInputMethod] = useState<InputMethod>('text');
   const [submitting, setSubmitting] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const { show: showToast } = useToast();
   const rawRef = useRef<HTMLTextAreaElement>(null);
   const contextRef = useRef<HTMLTextAreaElement>(null);
   const searchParams = useSearchParams();
@@ -43,6 +44,19 @@ export default function CaptureForm() {
       setTimeout(() => contextRef.current?.focus(), 100);
     }
   }, [searchParams]);
+
+  // Global `/` to focus capture input
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== '/') return;
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || (el as HTMLElement).isContentEditable)) return;
+      e.preventDefault();
+      rawRef.current?.focus();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -95,12 +109,10 @@ export default function CaptureForm() {
       if (rawRef.current) rawRef.current.style.height = 'auto';
       if (contextRef.current) contextRef.current.style.height = 'auto';
 
-      setToast('Captured');
-      setTimeout(() => setToast(null), 2000);
+      showToast('Captured');
       rawRef.current?.focus();
     } catch {
-      setToast('Failed to capture');
-      setTimeout(() => setToast(null), 3000);
+      showToast('Failed to capture');
     } finally {
       setSubmitting(false);
     }
@@ -160,17 +172,6 @@ export default function CaptureForm() {
         </div>
       </div>
 
-      {toast && (
-        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 toast-enter">
-          <span className={`px-3 py-1 rounded text-xs font-mono ${
-            toast === 'Captured'
-              ? 'text-[#22c55e] border border-[#22c55e]/20 bg-[#22c55e]/5'
-              : 'text-[#ef4444] border border-[#ef4444]/20 bg-[#ef4444]/5'
-          }`}>
-            {toast}
-          </span>
-        </div>
-      )}
     </form>
   );
 }

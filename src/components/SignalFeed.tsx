@@ -1,12 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createClient, isConfigured } from '@/lib/supabase';
 import { MOCK_SIGNALS } from '@/lib/mock-data';
 import SwipeableCard from './SwipeableCard';
 import SelectionBar from './SelectionBar';
 import ExportPreviewModal from './ExportPreviewModal';
+import ContextMenu from './ContextMenu';
 import { signalsToMarkdown } from '@/lib/signals-to-markdown';
+import { useListKeyboardNav } from '@/lib/use-list-keyboard-nav';
+import { useContextMenu } from '@/lib/use-context-menu';
 import type { SignalFeedItem } from '@/lib/types';
 
 const PAGE_SIZE = 20;
@@ -198,6 +201,7 @@ export default function SignalFeed({ initialSignals }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
+  const contextMenu = useContextMenu();
 
   // Dismiss open swipe panel on outside tap
   useEffect(() => {
@@ -212,13 +216,34 @@ export default function SignalFeed({ initialSignals }: Props) {
     return () => document.removeEventListener('pointerdown', handler);
   }, [openCardId]);
 
-  const loadMore = async () => {
-    const newOffset = offset + PAGE_SIZE;
+  // Use refs for infinite scroll to avoid observer churn
+  const loadStateRef = useRef({ offset, filter, loadingMore });
+  loadStateRef.current = { offset, filter, loadingMore };
+
+  const loadMore = useCallback(async () => {
+    const { offset: curOffset, filter: curFilter, loadingMore: isLoading } = loadStateRef.current;
+    if (isLoading) return;
+    const newOffset = curOffset + PAGE_SIZE;
     setOffset(newOffset);
     setLoadingMore(true);
-    await fetchSignals(newOffset, filter);
+    await fetchSignals(newOffset, curFilter);
     setLoadingMore(false);
-  };
+  }, [fetchSignals]);
+
+  // Infinite scroll sentinel
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore();
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore]);
 
   // Selection helpers
   const handleToggleSelect = useCallback((id: string) => {
@@ -325,21 +350,71 @@ export default function SignalFeed({ initialSignals }: Props) {
     return () => document.removeEventListener('keydown', handler);
   }, [selectMode, previewOpen, signals, selectedIds, exitSelectMode, copyMarkdown, openPreview]);
 
-  // In active view, partition into starred (pinned) and unstarred
-  const starred = filter === 'active' ? signals.filter(s => s.is_starred) : [];
-  const unstarred = filter === 'active' ? signals.filter(s => !s.is_starred) : signals;
+  // Keyboard nav
+  const toggleSelectMode = useCallback(() => {
+    setSelectMode(prev => !prev);
+  }, []);
 
-  const renderCard = (signal: SignalFeedItem) => (
-    <SwipeableCard
-      key={signal.id}
-      signal={signal}
-      isOpen={openCardId === signal.id}
-      onOpenChange={setOpenCardId}
-      selectMode={selectMode}
-      isSelected={selectedIds.includes(signal.id)}
-      onToggleSelect={handleToggleSelect}
-    />
+  // Flat ordered list for keyboard navigation (starred first in active view)
+  const flatSignals = useMemo(
+    () => filter === 'active'
+      ? [...signals.filter(s => s.is_starred), ...signals.filter(s => !s.is_starred)]
+      : signals,
+    [signals, filter],
   );
+
+  const { focusedIndex } = useListKeyboardNav({
+    signals: flatSignals,
+    selectMode,
+    onToggleSelect: handleToggleSelect,
+    onToggleSelectMode: toggleSelectMode,
+  });
+
+  // Listen for command palette toggle-select
+  useEffect(() => {
+    const handler = () => toggleSelectMode();
+    window.addEventListener('command:toggle-select', handler);
+    return () => window.removeEventListener('command:toggle-select', handler);
+  }, [toggleSelectMode]);
+
+  // In active view, partition into starred (pinned) and unstarred
+  const starred = useMemo(
+    () => filter === 'active' ? signals.filter(s => s.is_starred) : [],
+    [signals, filter],
+  );
+  const unstarred = useMemo(
+    () => filter === 'active' ? signals.filter(s => !s.is_starred) : signals,
+    [signals, filter],
+  );
+
+  // Build a map from signal id to flat index for focus tracking
+  const signalIndexMap = useMemo(
+    () => new Map(flatSignals.map((s, i) => [s.id, i])),
+    [flatSignals],
+  );
+
+  const handleContextMenu = useCallback((e: React.MouseEvent, signalId: string) => {
+    contextMenu.open(e, signalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open is stable, avoid depending on the full object
+  }, [contextMenu.open]);
+
+  const renderCard = (signal: SignalFeedItem) => {
+    const idx = signalIndexMap.get(signal.id) ?? -1;
+    return (
+      <SwipeableCard
+        key={signal.id}
+        signal={signal}
+        isOpen={openCardId === signal.id}
+        onOpenChange={setOpenCardId}
+        selectMode={selectMode}
+        isSelected={selectedIds.includes(signal.id)}
+        onToggleSelect={handleToggleSelect}
+        isFocused={idx === focusedIndex}
+        dataIndex={idx}
+        onContextMenu={handleContextMenu}
+      />
+    );
+  };
 
   return (
     <div ref={feedRef}>
@@ -428,14 +503,10 @@ export default function SignalFeed({ initialSignals }: Props) {
           </div>
 
           {hasMore && (
-            <div className="py-4 text-center">
-              <button
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="px-4 py-1.5 text-xs font-mono text-[#a0a0a0] hover:text-[#e5e5e5] disabled:opacity-30 transition-colors duration-150"
-              >
-                {loadingMore ? '...' : 'load more'}
-              </button>
+            <div ref={sentinelRef} className="py-4 text-center">
+              {loadingMore && (
+                <span className="text-xs font-mono text-[#888888] animate-pulse">loading...</span>
+              )}
             </div>
           )}
 
@@ -459,6 +530,18 @@ export default function SignalFeed({ initialSignals }: Props) {
         markdown={previewMarkdown}
         onClose={() => setPreviewOpen(false)}
       />
+
+      {/* Context menu */}
+      {contextMenu.isOpen && contextMenu.targetId && (() => {
+        const target = signals.find(s => s.id === contextMenu.targetId);
+        return target ? (
+          <ContextMenu
+            signal={target}
+            position={contextMenu.position}
+            onClose={contextMenu.close}
+          />
+        ) : null;
+      })()}
     </div>
   );
 }

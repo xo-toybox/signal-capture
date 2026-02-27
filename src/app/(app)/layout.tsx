@@ -1,5 +1,8 @@
 import Script from "next/script";
 import BugReporter from "@/components/BugReporter";
+import ToastProvider from "@/components/ToastProvider";
+import CommandPaletteProvider from "@/components/CommandPaletteProvider";
+import GlobalKeyboardNav from "@/components/GlobalKeyboardNav";
 
 export default function AppLayout({
   children,
@@ -7,12 +10,15 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      {children}
-      <BugReporter />
-      <Script id="sw-register" strategy="afterInteractive">
-        {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`}
-      </Script>
-    </>
+    <ToastProvider>
+      <CommandPaletteProvider>
+        {children}
+        <GlobalKeyboardNav />
+        <BugReporter />
+        <Script id="sw-register" strategy="afterInteractive">
+          {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`}
+        </Script>
+      </CommandPaletteProvider>
+    </ToastProvider>
   );
 }

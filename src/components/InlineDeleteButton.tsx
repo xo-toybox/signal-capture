@@ -1,60 +1,35 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
+import { deleteSignal, restoreSignal } from '@/lib/signal-actions';
+import { useToast } from '@/lib/use-toast';
+import type { SignalFeedItem } from '@/lib/types';
 
-export default function InlineDeleteButton({ signalId }: { signalId: string }) {
-  const [confirming, setConfirming] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+interface Props {
+  signal: SignalFeedItem;
+}
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+export default function InlineDeleteButton({ signal }: Props) {
+  const { show } = useToast();
 
-  const handleClick = async (e: React.MouseEvent) => {
+  const handleClick = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!confirming) {
-      setConfirming(true);
-      timerRef.current = setTimeout(() => setConfirming(false), 3000);
-      return;
-    }
+    // Optimistic: realtime will remove from feed
+    deleteSignal(signal.id).catch(() => {});
 
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setDeleting(true);
-
-    try {
-      const res = await fetch(`/api/signals?id=${encodeURIComponent(signalId)}`, { method: 'DELETE' });
-      if (!res.ok) {
-        setDeleting(false);
-        setConfirming(false);
-      }
-      // Realtime will handle UI removal on success
-    } catch {
-      setDeleting(false);
-      setConfirming(false);
-    }
-  };
-
-  if (deleting) {
-    return (
-      <span className="text-[10px] font-mono text-[#888888] px-2">...</span>
-    );
-  }
+    show('Signal deleted', () => {
+      restoreSignal(signal.raw_input, signal.source_url).catch(() => {});
+    });
+  }, [signal.id, signal.raw_input, signal.source_url, show]);
 
   return (
     <button
       onClick={handleClick}
-      className={`px-2 py-1 min-w-[28px] min-h-[28px] flex items-center justify-center transition-all duration-150 ${
-        confirming
-          ? 'text-[#ef4444] text-[10px] font-mono opacity-100'
-          : 'text-[#888888] text-base leading-none group-hover:text-[#a0a0a0] hover:text-[#ef4444]'
-      }`}
+      className="px-2 py-1 min-w-[28px] min-h-[28px] flex items-center justify-center text-[#888888] text-base leading-none group-hover:text-[#a0a0a0] hover:text-[#ef4444] transition-all duration-150"
     >
-      {confirming ? 'delete?' : '×'}
+      ×
     </button>
   );
 }

@@ -85,10 +85,10 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
       </div>
 
       <div className="flex-shrink-0 flex items-center gap-0.5 pl-1 pr-1 sm:px-2 py-2.5 self-start">
-        <span className="hidden sm:inline-flex">
+        <span className="hidden sm:inline-flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
           <StarButton signalId={signal.id} isStarred={signal.is_starred} />
         </span>
-        <span className="hidden sm:inline-flex">
+        <span className="hidden sm:inline-flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
           <ArchiveButton signalId={signal.id} isArchived={signal.is_archived} />
         </span>
         {signal.is_published && (
@@ -97,7 +97,9 @@ export default function SignalCard({ signal }: { signal: SignalFeedItem }) {
         <span className="text-xs text-[#888888] font-mono sm:pl-0">
           {relativeTime(signal.created_at)}
         </span>
-        <InlineDeleteButton signalId={signal.id} />
+        <span className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
+          <InlineDeleteButton signal={signal} />
+        </span>
       </div>
     </div>
   );

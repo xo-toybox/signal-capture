@@ -1,59 +1,34 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { deleteSignal, restoreSignal } from '@/lib/signal-actions';
+import { useToast } from '@/lib/use-toast';
 
-function buttonLabel(deleting: boolean, confirming: boolean): string {
-  if (deleting) return 'deleting...';
-  if (confirming) return 'confirm delete';
-  return 'delete';
+interface Props {
+  id: string;
+  rawInput: string;
+  sourceUrl: string | null;
 }
 
-export default function DeleteButton({ id }: { id: string }) {
+export default function DeleteButton({ id, rawInput, sourceUrl }: Props) {
   const router = useRouter();
-  const [confirming, setConfirming] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    if (!confirming) return;
-    const timer = setTimeout(() => setConfirming(false), 3000);
-    return () => clearTimeout(timer);
-  }, [confirming]);
+  const { show } = useToast();
 
   const handleClick = useCallback(async () => {
-    if (!confirming) {
-      setConfirming(true);
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/signals?id=${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        router.push('/');
-        return;
-      }
-    } catch {
-      // network error
-    }
-    setDeleting(false);
-    setConfirming(false);
-  }, [confirming, id, router]);
+    deleteSignal(id).catch(() => {});
+    router.push('/');
+    show('Signal deleted', () => {
+      restoreSignal(rawInput, sourceUrl).catch(() => {});
+    });
+  }, [id, rawInput, sourceUrl, router, show]);
 
   return (
     <button
       onClick={handleClick}
-      disabled={deleting}
-      className={`text-xs font-mono uppercase tracking-wider border px-3 py-1.5 transition-colors ${
-        confirming
-          ? 'text-[#ef4444] border-[#ef4444]/40 hover:bg-[#ef4444]/10'
-          : 'text-[#888888] border-white/[0.06] hover:text-[#a0a0a0] hover:border-white/10'
-      } disabled:opacity-50`}
+      className="text-xs font-mono uppercase tracking-wider border px-3 py-1.5 text-[#888888] border-white/[0.06] hover:text-[#ef4444] hover:border-[#ef4444]/40 transition-colors"
     >
-      {buttonLabel(deleting, confirming)}
+      delete
     </button>
   );
 }

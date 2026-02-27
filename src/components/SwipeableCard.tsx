@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import Link from 'next/link';
 import type { SignalFeedItem } from '@/lib/types';
 import { useSwipe, PANEL_WIDTH, type RevealedSide } from '@/lib/use-swipe';
@@ -14,9 +14,12 @@ interface Props {
   selectMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
+  isFocused?: boolean;
+  dataIndex?: number;
+  onContextMenu?: (e: React.MouseEvent, signalId: string) => void;
 }
 
-export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode, isSelected, onToggleSelect }: Props) {
+export default memo(function SwipeableCard({ signal, isOpen, onOpenChange, selectMode, isSelected, onToggleSelect, isFocused, dataIndex, onContextMenu }: Props) {
   const onCommitLeft = useCallback(() => {
     toggleArchive(signal.id, signal.is_archived).catch(() => {});
   }, [signal.id, signal.is_archived]);
@@ -73,9 +76,11 @@ export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode
     </div>
   );
 
+  const focusRing = isFocused ? 'ring-1 ring-white/10' : '';
+
   if (selectMode) {
     return (
-      <div className="relative overflow-hidden border-b border-white/5">
+      <div className={`relative overflow-hidden border-b border-white/5 ${focusRing}`} data-signal-index={dataIndex}>
         <div
           className="relative bg-[#0a0a0a] cursor-pointer hover:bg-white/[0.02] transition-colors duration-150"
           onClick={handleSelectClick}
@@ -87,7 +92,11 @@ export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode
   }
 
   return (
-    <div className="relative overflow-hidden border-b border-white/5">
+    <div
+      className={`relative overflow-hidden border-b border-white/5 ${focusRing}`}
+      data-signal-index={dataIndex}
+      onContextMenu={onContextMenu ? (e) => onContextMenu(e, signal.id) : undefined}
+    >
       {/* Left panel (star) — revealed by swiping right — touch only */}
       <div
         className="absolute inset-y-0 left-0 hidden pointer-coarse:flex items-center justify-center bg-[#eab308]/20 text-[#eab308] cursor-pointer active:bg-[#eab308]/30"
@@ -147,4 +156,4 @@ export default function SwipeableCard({ signal, isOpen, onOpenChange, selectMode
       </div>
     </div>
   );
-}
+});

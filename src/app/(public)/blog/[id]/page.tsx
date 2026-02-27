@@ -106,7 +106,19 @@ export default async function BlogPost({
           )}
         </div>
 
-        <div className="text-xs text-[#888888] mt-1 font-mono">{publishDate}</div>
+        <div className="text-xs text-[#888888] mt-1 font-mono">
+          {publishDate}
+          {s.edited_at && (() => {
+            const editedDate = new Date(s.edited_at);
+            const refDate = s.published_at ? new Date(s.published_at) : null;
+            const sameDay = refDate && editedDate.toDateString() === refDate.toDateString();
+            return (
+              <span className="ml-2 text-[#666666]">
+                · edited{!sameDay && ` ${editedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
+              </span>
+            );
+          })()}
+        </div>
       </div>
 
       <SectionHeader label="Raw Capture" />

@@ -17,6 +17,7 @@ function makeSignal(overrides: Partial<SignalFeedItem> = {}): SignalFeedItem {
     is_archived: false,
     is_published: false,
     published_at: null,
+    edited_at: null,
     project_id: null,
     project_name: null,
     source_title: null,

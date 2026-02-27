@@ -134,6 +134,11 @@ export async function PATCH(request: NextRequest) {
       ? body.source_title.trim().slice(0, 500) || null
       : null;
   }
+
+  // Content edits (title, context) update edited_at; workflow toggles do not
+  if ('source_title' in body || 'capture_context' in body) {
+    updates.edited_at = new Date().toISOString();
+  }
   if ('is_starred' in body) {
     updates.is_starred = !!body.is_starred;
   }
@@ -225,6 +230,13 @@ export async function GET(request: NextRequest) {
     query = query.eq('is_archived', true);
   }
   // 'all' — no filter
+
+  // Text search
+  const search = searchParams.get('search')?.trim();
+  if (search && search.length > 0) {
+    const pattern = `%${search}%`;
+    query = query.or(`raw_input.ilike.${pattern},source_title.ilike.${pattern}`);
+  }
 
   const orderCol = filter === 'published' ? 'published_at' : 'created_at';
   const { data, error } = await query

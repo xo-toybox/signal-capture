@@ -31,6 +31,12 @@ function BlogEntry({ signal, isOpen, onToggle }: { signal: SignalFeedItem; isOpe
   const publishDate = signal.published_at
     ? new Date(signal.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
+  const editedDate = signal.edited_at ? (() => {
+    const ed = new Date(signal.edited_at);
+    const ref = signal.published_at ? new Date(signal.published_at) : null;
+    const sameDay = ref && ed.toDateString() === ref.toDateString();
+    return sameDay ? 'edited' : `edited ${ed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  })() : null;
 
   return (
     <div className="border border-white/[0.06] rounded overflow-hidden">
@@ -47,9 +53,10 @@ function BlogEntry({ signal, isOpen, onToggle }: { signal: SignalFeedItem; isOpe
           </div>
           <div className="flex items-center gap-2 mt-1.5 text-xs text-[#888888] font-mono">
             {publishDate && <span>{publishDate}</span>}
+            {editedDate && <span className="text-[#666666]">· {editedDate}</span>}
             {tags.length > 0 && (
               <>
-                {publishDate && <span className="text-white/10">|</span>}
+                {(publishDate || editedDate) && <span className="text-white/10">|</span>}
                 <span className="truncate">{tags.join(' · ')}</span>
               </>
             )}
